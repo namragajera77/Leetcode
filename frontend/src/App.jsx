@@ -13,6 +13,9 @@ import AdminUpdate from "./components/AdminUpdate"
 import AdminVideo from "./components/AdminVideo"
 import AdminUpload from "./components/AdminUpload"
 import LandingPage from "./pages/LandingPage"
+import About from "./pages/About"
+import Contact from "./pages/Contact"
+import Profile from "./pages/Profile"
 
 function App(){
 
@@ -33,6 +36,9 @@ function App(){
   <>
     <Routes>
       <Route path="/" element={isAuthenticated ? <Homepage /> : <LandingPage />}></Route>
+      <Route path="/about" element={<About />}></Route>
+      <Route path="/contact" element={<Contact />}></Route>
+      <Route path="/profile" element={isAuthenticated ? <Profile /> : <Navigate to="/login" />}></Route>
       <Route path="/login" element={isAuthenticated ? <Navigate to="/" /> : <Login />}></Route>
       <Route path="/signup" element={isAuthenticated ? <Navigate to="/" /> : <Signup />}></Route>
         {/* <Route path="/admin" element={<AdminPanel/>}></Route> */}

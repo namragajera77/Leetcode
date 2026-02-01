@@ -6,6 +6,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router';
 import {registerUser} from '../authSlice'
 import { useEffect } from 'react';
+import { Eye, EyeOff, Code2, Sparkles, UserPlus } from 'lucide-react';
 
 // Zod validation schema
 const signUpSchema = z
@@ -64,89 +65,135 @@ const onSubmit = (data) => {
 };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 px-4">
-      <div className="w-full max-w-xl glass p-8 rounded-2xl shadow-xl backdrop-blur-sm bg-white/10">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-950 via-purple-950 to-pink-950 px-4 relative overflow-hidden">
+      {/* Ambient background effects */}
+      <div className="absolute top-0 left-0 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl animate-pulse pointer-events-none"></div>
+      <div className="absolute bottom-0 right-0 w-96 h-96 bg-pink-500/20 rounded-full blur-3xl animate-pulse pointer-events-none" style={{animationDelay: '1s'}}></div>
+      
+      <div className="w-full max-w-lg relative z-10 animate-fadeIn">
+        <div className="bg-gradient-to-br from-purple-900/40 to-indigo-900/40 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 p-8 lg:p-10">
+          
+          {/* Logo */}
+          <div className="flex justify-center mb-6">
+            <div className="p-3 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl shadow-lg">
+              <Code2 className="h-8 w-8 text-white" />
+            </div>
+          </div>
 
-        {/* LeetCode Title */}
-        <h1 className="text-5xl font-bold text-yellow-300 text-center mb-2 drop-shadow-md tracking-wide">
-          LeetCode
-        </h1>
-        <h2 className="text-4xl font-extrabold text-center text-white mb-6">Sign Up</h2>
+          {/* Title */}
+          <h1 className="text-4xl lg:text-5xl font-black text-center mb-2">
+            <span className="bg-gradient-to-r from-white via-purple-200 to-pink-200 bg-clip-text text-transparent">
+              NG AlgoVista
+            </span>
+          </h1>
+
+          {/* Tagline */}
+          <p className="text-center text-purple-300/80 text-sm mb-2 font-medium">
+            Start your algorithm learning journey
+          </p>
+
+          {/* Subheading */}
+          <h2 className="text-3xl font-bold text-center text-white mb-8">Create Your Account</h2>
 
         {/* Form */}
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
 
-          {/* First Name */}
+          {/* Full Name */}
           <div>
+            <label className="text-white/90 text-sm font-medium mb-2 block">Full Name</label>
             <input
               {...register('firstname')}
-              placeholder="Enter your name"
-              className="input input-bordered w-full bg-white/80 text-black"
+              placeholder="Enter your full name"
+              className="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder:text-purple-300/50 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all"
             />
-            {errors.firstname && <p className="text-red-500 text-sm mt-1">{errors.firstname.message}</p>}
+            {errors.firstname && <p className="text-red-400 text-sm mt-2">{errors.firstname.message}</p>}
           </div>
 
           {/* Email */}
           <div>
+            <label className="text-white/90 text-sm font-medium mb-2 block">Email Address</label>
             <input
               {...register('emailid')}
               placeholder="Enter your email"
-              className="input input-bordered w-full bg-white/80 text-black"
+              className="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder:text-purple-300/50 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all"
               type="email"
             />
-            {errors.emailid && <p className="text-red-500 text-sm mt-1">{errors.emailid.message}</p>}
+            {errors.emailid && <p className="text-red-400 text-sm mt-2">{errors.emailid.message}</p>}
           </div>
 
           {/* Password */}
-          <div className="relative">
-            <input
-              type={showPassword ? "text" : "password"}
-              {...register('password')}
-              placeholder="Enter your password"
-              className="input input-bordered w-full bg-white/80 text-black pr-10"
-            />
-            <span
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 transform -translate-y-1/2 cursor-pointer"
-              title={showPassword ? "Hide password" : "Show password"}
-            >
-              {showPassword ?   "👁️" : "🙈"}
-            </span>
-            {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>}
+          <div>
+            <label className="text-white/90 text-sm font-medium mb-2 block">Password</label>
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                {...register('password')}
+                placeholder="Create a password"
+                className="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder:text-purple-300/50 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all pr-12"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-purple-300/70 hover:text-purple-200 transition-colors"
+                title={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+              </button>
+            </div>
+            {errors.password && <p className="text-red-400 text-sm mt-2">{errors.password.message}</p>}
           </div>
 
           {/* Confirm Password */}
-          <div className="relative">
-            <input
-              type={showConfirm ? "text" : "password"}
-              {...register('confirmPassword')}
-              placeholder="Confirm your password"
-              className="input input-bordered w-full bg-white/80 text-black pr-10"
-            />
-            <span
-              onClick={() => setShowConfirm(!showConfirm)}
-              className="absolute right-3 top-1/2 transform -translate-y-1/2 cursor-pointer"
-              title={showConfirm ? "Hide password" : "Show password"}
-            >
-              {showConfirm ? "👁️" : "🙈"}
-            </span>
-            {errors.confirmPassword && <p className="text-red-500 text-sm mt-1">{errors.confirmPassword.message}</p>}
+          <div>
+            <label className="text-white/90 text-sm font-medium mb-2 block">Confirm Password</label>
+            <div className="relative">
+              <input
+                type={showConfirm ? "text" : "password"}
+                {...register('confirmPassword')}
+                placeholder="Confirm your password"
+                className="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder:text-purple-300/50 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all pr-12"
+              />
+              <button
+                type="button"
+                onClick={() => setShowConfirm(!showConfirm)}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-purple-300/70 hover:text-purple-200 transition-colors"
+                title={showConfirm ? "Hide password" : "Show password"}
+              >
+                {showConfirm ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+              </button>
+            </div>
+            {errors.confirmPassword && <p className="text-red-400 text-sm mt-2">{errors.confirmPassword.message}</p>}
           </div>
 
-          {/* Submit */}
+          {/* Submit Button */}
           <button
             type="submit"
-            className={`btn btn-primary w-full hover:scale-105 transition-transform duration-300 
-            ${loading ? 'loading' : ''}`} disabled={loading}>
-          
-            Sign Up
+            disabled={loading}
+            className="w-full mt-2 px-6 py-3.5 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold text-lg shadow-xl hover:shadow-purple-500/50 transition-all duration-300 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-2"
+          >
+            {loading ? (
+              <>
+                <span className="loading loading-spinner loading-sm"></span>
+                Creating account...
+              </>
+            ) : (
+              <>
+                <UserPlus className="h-5 w-5" />
+                Create Account
+              </>
+            )}
           </button>
         </form>
 
-        {/* Login Link */}
-        <p className="text-center text-white mt-4 text-sm">
-          Already have an account? <a href="/login" className="underline">Login</a>
+        {/* Footer */}
+        <p className="text-center text-purple-200/80 mt-6 text-sm">
+          Already have an account?{' '}
+          <a href="/login" className="text-purple-300 hover:text-white font-semibold underline underline-offset-2 transition-colors">
+            Sign In
+          </a>
         </p>
+
+        </div>
       </div>
     </div>
   );

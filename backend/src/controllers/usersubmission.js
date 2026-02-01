@@ -258,4 +258,25 @@ const runCode = async(req,res)=>{
     res.status(500).send("Internal Server Error "+ err);
   }
 }
-module.exports = {usersubmission,runCode};
+
+const getUserSubmissions = async (req, res) => {
+  try {
+    const userId = req.result._id;
+    
+    const submissions = await Submissions.find({ userId })
+      .populate({
+        path: 'problemId',
+        model: 'Problem',
+        select: 'title difficulty tags'
+      })
+      .sort({ createdAt: -1 })
+      .limit(100);
+    
+    res.status(200).json(submissions);
+  } catch (err) {
+    console.error('getUserSubmissions error:', err);
+    res.status(500).send("Internal Server Error " + err);
+  }
+};
+
+module.exports = {usersubmission,runCode,getUserSubmissions};
