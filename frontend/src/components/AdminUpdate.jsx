@@ -37,7 +37,20 @@ const problemSchema = z.object({
       language: z.enum(['c++', 'java', 'javascript']), // Language must be one of these three
       completeCode: z.string().min(1) // Complete solution code must not be empty
     })
-  ).length(3) // Must have exactly 3 languages (C++, Java, JavaScript)
+  ).length(3), // Must have exactly 3 languages (C++, Java, JavaScript)
+  functionMetadata: z.object({ // Optional LeetCode-style function metadata
+    functionName: z.string().min(1), // Function name (e.g., 'addTwoNumbers')
+    functionSignature: z.object({ // Function signatures for each language
+      java: z.string().min(1), // Java signature (e.g., 'int addTwoNumbers(int a, int b)')
+      cpp: z.string().min(1), // C++ signature (e.g., 'int addTwoNumbers(int a, int b)')
+      javascript: z.string().min(1) // JavaScript signature (e.g., 'function addTwoNumbers(a, b)')
+    }),
+    returnType: z.object({ // Return types for each language
+      java: z.string().min(1), // Java return type (e.g., 'int')
+      cpp: z.string().min(1), // C++ return type (e.g., 'int')
+      javascript: z.string().min(1) // JavaScript return type (e.g., 'number')
+    })
+  }).optional() // This field is optional - only needed for LeetCode-style problems
 });
 
 const AdminUpdate = () => {
@@ -408,7 +421,20 @@ const EditProblemForm = ({ problem, onUpdate, onCancel, updateLoading }) => {
         { language: 'c++', completeCode: '' },
         { language: 'java', completeCode: '' },
         { language: 'javascript', completeCode: '' }
-      ]
+      ],
+      functionMetadata: {
+        functionName: problem.functionMetadata?.functionName || '',
+        functionSignature: {
+          java: problem.functionMetadata?.functionSignature?.java || '',
+          cpp: problem.functionMetadata?.functionSignature?.cpp || '',
+          javascript: problem.functionMetadata?.functionSignature?.javascript || ''
+        },
+        returnType: {
+          java: problem.functionMetadata?.returnType?.java || '',
+          cpp: problem.functionMetadata?.returnType?.cpp || '',
+          javascript: problem.functionMetadata?.returnType?.javascript || ''
+        }
+      }
     }
   });
 
@@ -524,6 +550,88 @@ const EditProblemForm = ({ problem, onUpdate, onCancel, updateLoading }) => {
                       <option value="graph" className="text-black">Graph</option>
                       <option value="dp" className="text-black">DP</option>
                     </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Section 2: LeetCode-Style Function Metadata */}
+          <div className="card bg-white/10 backdrop-blur-md shadow-xl border border-white/20">
+            <div className="card-body">
+              <h2 className="card-title text-2xl font-semibold text-white mb-4">
+                <svg className="w-6 h-6 mr-2 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                </svg>
+                LeetCode-Style Configuration (Optional)
+              </h2>
+              <p className="text-white/70 text-sm mb-4">Fill this section to enable LeetCode-style submissions where users write only the solution function.</p>
+              
+              <div className="grid gap-4">
+                {/* Function Name */}
+                <div className="form-control">
+                  <label className="label">
+                    <span className="label-text font-semibold text-white">Function Name</span>
+                    <span className="label-text-alt text-white/50">e.g., addTwoNumbers</span>
+                  </label>
+                  <input {...register('functionMetadata.functionName')} placeholder="addTwoNumbers" className="input input-bordered w-full bg-white/10 backdrop-blur-md border-white/20 text-black placeholder-white/50 focus:bg-white/20 transition-all duration-300" />
+                  {errors.functionMetadata?.functionName && <span className="text-red-300 text-sm mt-1">{errors.functionMetadata.functionName.message}</span>}
+                </div>
+
+                {/* Function Signatures */}
+                <div className="divider text-white/50">Function Signatures</div>
+                
+                <div className="form-control">
+                  <label className="label">
+                    <span className="label-text font-semibold text-white">Java Signature</span>
+                    <span className="label-text-alt text-white/50">e.g., int addTwoNumbers(int a, int b)</span>
+                  </label>
+                  <input {...register('functionMetadata.functionSignature.java')} placeholder="int addTwoNumbers(int a, int b)" className="input input-bordered w-full bg-white/10 backdrop-blur-md border-white/20 text-black placeholder-white/50 focus:bg-white/20 transition-all duration-300 font-mono text-sm" />
+                  {errors.functionMetadata?.functionSignature?.java && <span className="text-red-300 text-sm mt-1">{errors.functionMetadata.functionSignature.java.message}</span>}
+                </div>
+
+                <div className="form-control">
+                  <label className="label">
+                    <span className="label-text font-semibold text-white">C++ Signature</span>
+                    <span className="label-text-alt text-white/50">e.g., int addTwoNumbers(int a, int b)</span>
+                  </label>
+                  <input {...register('functionMetadata.functionSignature.cpp')} placeholder="int addTwoNumbers(int a, int b)" className="input input-bordered w-full bg-white/10 backdrop-blur-md border-white/20 text-black placeholder-white/50 focus:bg-white/20 transition-all duration-300 font-mono text-sm" />
+                  {errors.functionMetadata?.functionSignature?.cpp && <span className="text-red-300 text-sm mt-1">{errors.functionMetadata.functionSignature.cpp.message}</span>}
+                </div>
+
+                <div className="form-control">
+                  <label className="label">
+                    <span className="label-text font-semibold text-white">JavaScript Signature</span>
+                    <span className="label-text-alt text-white/50">e.g., function addTwoNumbers(a, b)</span>
+                  </label>
+                  <input {...register('functionMetadata.functionSignature.javascript')} placeholder="function addTwoNumbers(a, b)" className="input input-bordered w-full bg-white/10 backdrop-blur-md border-white/20 text-black placeholder-white/50 focus:bg-white/20 transition-all duration-300 font-mono text-sm" />
+                  {errors.functionMetadata?.functionSignature?.javascript && <span className="text-red-300 text-sm mt-1">{errors.functionMetadata.functionSignature.javascript.message}</span>}
+                </div>
+
+                {/* Return Types */}
+                <div className="divider text-white/50">Return Types</div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="form-control">
+                    <label className="label">
+                      <span className="label-text font-semibold text-white">Java</span>
+                    </label>
+                    <input {...register('functionMetadata.returnType.java')} placeholder="int" className="input input-bordered w-full bg-white/10 backdrop-blur-md border-white/20 text-black placeholder-white/50 focus:bg-white/20 transition-all duration-300 font-mono text-sm" />
+                  </div>
+
+                  <div className="form-control">
+                    <label className="label">
+                      <span className="label-text font-semibold text-white">C++</span>
+                    </label>
+                    <input {...register('functionMetadata.returnType.cpp')} placeholder="int" className="input input-bordered w-full bg-white/10 backdrop-blur-md border-white/20 text-black placeholder-white/50 focus:bg-white/20 transition-all duration-300 font-mono text-sm" />
+                  </div>
+
+                  <div className="form-control">
+                    <label className="label">
+                      <span className="label-text font-semibold text-white">JavaScript</span>
+                    </label>
+                    <input {...register('functionMetadata.returnType.javascript')} placeholder="number" className="input input-bordered w-full bg-white/10 backdrop-blur-md border-white/20 text-black placeholder-white/50 focus:bg-white/20 transition-all duration-300 font-mono text-sm" />
                   </div>
                 </div>
               </div>

@@ -1,0 +1,78 @@
+{
+  "title": "Find Maximum of Two Numbers",
+  "description": "Given two integers a and b, return the maximum number among them.\n\nExample 1:\nInput: a = 5, b = 10\nOutput: 10\nExplanation: 10 is greater than 5\n\nExample 2:\nInput: a = -3, b = 2\nOutput: 2\nExplanation: 2 is greater than -3\n\nConstraints:\n- -1000 <= a, b <= 1000",
+  "difficulty": "easy",
+  "tags": "array",
+  
+  "functionMetadata": {
+    "functionName": "findMax",
+    "functionSignature": {
+      "java": "int findMax(int a, int b)",
+      "cpp": "int findMax(int a, int b)",
+      "javascript": "function findMax(a, b)"
+    },
+    "returnType": {
+      "java": "int",
+      "cpp": "int",
+      "javascript": "number"
+    }
+  },
+  
+  "visibleTestCases": [
+    {
+      "input": "5 10",
+      "output": "10",
+      "explanation": "10 is greater than 5"
+    },
+    {
+      "input": "-3 2",
+      "output": "2",
+      "explanation": "2 is greater than -3"
+    }
+  ],
+  
+  "hiddenTestCases": [
+    {
+      "input": "100 50",
+      "output": "100"
+    },
+    {
+      "input": "0 0",
+      "output": "0"
+    },
+    {
+      "input": "-100 -50",
+      "output": "-50"
+    }
+  ],
+  
+  "referenceSolution": [
+    {
+      "language": "java",
+      "completeCode": "class Solution {\n    public int findMax(int a, int b) {\n        return Math.max(a, b);\n    }\n}"
+    },
+    {
+      "language": "cpp",
+      "completeCode": "class Solution {\npublic:\n    int findMax(int a, int b) {\n        return max(a, b);\n    }\n};"
+    },
+    {
+      "language": "javascript",
+      "completeCode": "function findMax(a, b) {\n    return Math.max(a, b);\n}"
+    }
+  ],
+  
+  "startCode": [
+    {
+      "language": "java",
+      "initialCode": "class Solution {\n    public int findMax(int a, int b) {\n        // Write your code here\n        \n    }\n}"
+    },
+    {
+      "language": "cpp",
+      "initialCode": "class Solution {\npublic:\n    int findMax(int a, int b) {\n        // Write your code here\n        \n    }\n};"
+    },
+    {
+      "language": "javascript",
+      "initialCode": "function findMax(a, b) {\n    // Write your code here\n    \n}"
+    }
+  ]
+}

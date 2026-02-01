@@ -1,6 +1,7 @@
 const Problem = require('../models/problem');
 const Submissions = require('../models/submission')
 const {getLanguageById,submitBatch,submitToken} = require('../utils/problemUtility')
+const { prepareSubmissions, validateUserCode } = require('../utils/codeMerger');
 
 const usersubmission =  async (req,res)=>{   
     try{
@@ -18,6 +19,12 @@ const usersubmission =  async (req,res)=>{
 
         if(!userId || !problemId || !code || !language){
             return res.status(400).send("some field missing");
+        }
+
+        // Validate user code structure
+        const validation = validateUserCode(code, language);
+        if (!validation.isValid) {
+            return res.status(400).send(validation.error);
         }
 
         const problem = await Problem.findById(problemId);
@@ -38,12 +45,27 @@ const usersubmission =  async (req,res)=>{
 
         const languageId = getLanguageById(language);
 
-         const submissions = problem.hiddenTestCases.map((testcase)=>({
-            source_code:code,
-            language_id: languageId,
-            stdin: testcase.input,
-            expected_output: testcase.output
-        }));
+        // NEW: Use wrapper-based submission preparation
+        let submissions;
+        
+        if (problem.functionMetadata && problem.functionMetadata.functionSignature) {
+            // LeetCode-style: Merge user code with wrapper
+            submissions = prepareSubmissions(
+                code,
+                language,
+                problem.hiddenTestCases,
+                problem.functionMetadata,
+                languageId
+            );
+        } else {
+            // Legacy: Direct code submission (backward compatible)
+            submissions = problem.hiddenTestCases.map((testcase)=>({
+                source_code:code,
+                language_id: languageId,
+                stdin: testcase.input,
+                expected_output: testcase.output
+            }));
+        }
 
         const submitResult = await submitBatch(submissions);
 
@@ -151,16 +173,37 @@ const runCode = async(req,res)=>{
     if(!userId||!code||!problemId||!language)
       return res.status(400).send("Some field missing");
 
+    // Validate user code structure
+    const validation = validateUserCode(code, language);
+    if (!validation.isValid) {
+        return res.status(400).send(validation.error);
+    }
+
     const problem =  await Problem.findById(problemId);
 
     const languageId = getLanguageById(language);
 
-    const submissions = problem.visibleTestCases.map((testcase)=>({
-      source_code:code,
-      language_id: languageId,
-      stdin: testcase.input,
-      expected_output: testcase.output
-    }));
+    // NEW: Use wrapper-based submission for visible test cases
+    let submissions;
+    
+    if (problem.functionMetadata && problem.functionMetadata.functionSignature) {
+        // LeetCode-style: Merge user code with wrapper
+        submissions = prepareSubmissions(
+            code,
+            language,
+            problem.visibleTestCases,
+            problem.functionMetadata,
+            languageId
+        );
+    } else {
+        // Legacy: Direct code submission (backward compatible)
+        submissions = problem.visibleTestCases.map((testcase)=>({
+          source_code:code,
+          language_id: languageId,
+          stdin: testcase.input,
+          expected_output: testcase.output
+        }));
+    }
 
     const submitResult = await submitBatch(submissions);
   

@@ -1,4 +1,5 @@
 const {getLanguageById,submitBatch,submitToken} = require("../utils/problemUtility");
+const { prepareSubmissions } = require('../utils/codeMerger');
 
 const Problem = require('../models/problem');
 const submissions = require('../models/submission')
@@ -10,7 +11,7 @@ const createProblem = async (req,res)=>{
 
     const {title,description,difficulty,tags,
         visibleTestCases,hiddenTestCases,startCode,
-        referenceSolution, problemCreator
+        referenceSolution, problemCreator, functionMetadata
     } = req.body;
 
     // console.log(req.body)
@@ -28,13 +29,27 @@ const createProblem = async (req,res)=>{
 
         const languageId = getLanguageById(language);
           
-        // I am creating Batch submission
-        const submissions = visibleTestCases.map((testcase)=>({
-            source_code:completeCode,
-            language_id: languageId,
-            stdin: testcase.input,
-            expected_output: testcase.output
-        }));
+        // NEW: Support both LeetCode-style and legacy submissions
+        let submissions;
+        
+        if (functionMetadata && functionMetadata.functionSignature) {
+            // LeetCode-style: Merge reference solution with wrapper
+            submissions = prepareSubmissions(
+                completeCode,
+                language,
+                visibleTestCases,
+                functionMetadata,
+                languageId
+            );
+        } else {
+            // Legacy: Direct code submission
+            submissions = visibleTestCases.map((testcase)=>({
+                source_code:completeCode,
+                language_id: languageId,
+                stdin: testcase.input,
+                expected_output: testcase.output
+            }));
+        }
 
 
         const submitResult = await submitBatch(submissions);
@@ -46,11 +61,14 @@ const createProblem = async (req,res)=>{
         
        const testResult = await submitToken(resultToken);
 
-
-
+       // Better error logging
        for(const test of testResult){
         if(test.status_id!=3){
-         return res.status(400).send("Error Occured");
+         console.log('❌ Test failed:', test);
+         console.log('Status:', test.status?.description || test.status_id);
+         console.log('Stderr:', test.stderr);
+         console.log('Compile output:', test.compile_output);
+         return res.status(400).send(`Error: ${test.status?.description || 'Test case failed'}. Details: ${test.stderr || test.compile_output || 'Check server logs'}`);
         }
        }
 
@@ -294,4 +312,3 @@ const submittedproblem = async (req,res) => {
 
 
 module.exports = {createProblem,updateproblem,deleteproblem,getproblembyid,getAllProblem,solvedallProblembyuser,submittedproblem};
-

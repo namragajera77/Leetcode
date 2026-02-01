@@ -1,9 +1,9 @@
-const { GoogleGenerativeAI } = require("@google/generative-ai");
+const Groq = require('groq-sdk');
 
 const solveDoubt = async(req, res) => {
     try {
-        // Check if GEMINI_KEY is configured
-        if (!process.env.GEMINI_KEY) {
+        // Check if GROQ_API_KEY is configured
+        if (!process.env.GROQ_API_KEY) {
             return res.status(500).json({
                 message: "AI service is not configured. Please contact administrator."
             });
@@ -18,8 +18,7 @@ const solveDoubt = async(req, res) => {
             });
         }
 
-        const genAI = new GoogleGenerativeAI(process.env.GEMINI_KEY);
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
         // Prepare the conversation history
         const conversationHistory = messages.map(msg => ({
@@ -94,34 +93,45 @@ const solveDoubt = async(req, res) => {
 
 Remember: Your goal is to help users learn and understand DSA concepts through the lens of the current problem, not just to provide quick answers.`;
 
-        // Start the chat
-        const chat = model.startChat({
-            generationConfig: {
-                maxOutputTokens: 2048,
-                temperature: 0.7,
+        // Prepare messages for Groq
+        const groqMessages = [
+            {
+                role: "system",
+                content: systemPrompt
             },
+            ...messages.map(msg => ({
+                role: msg.role === 'user' ? 'user' : 'assistant',
+                content: msg.parts[0].text
+            }))
+        ];
+
+        // Call Groq API
+        const chatCompletion = await groq.chat.completions.create({
+            messages: groqMessages,
+            model: "llama-3.3-70b-versatile", // Fast and capable model
+            temperature: 0.7,
+            max_tokens: 2048,
         });
 
-        // Send the system prompt as the first message
-        await chat.sendMessage(systemPrompt);
-
-        // Send the user's message
-        const lastUserMessage = conversationHistory[conversationHistory.length - 1];
-        const result = await chat.sendMessage(lastUserMessage.parts[0].text);
-        const response = await result.response;
-        const text = response.text();
+        const responseText = chatCompletion.choices[0]?.message?.content || "I couldn't generate a response.";
 
         res.status(200).json({
-            message: text
+            message: responseText
         });
 
     } catch (error) {
         console.error("AI Chat Error:", error);
+        console.error("Error details:", {
+            message: error.message,
+            stack: error.stack,
+            name: error.name
+        });
         
         // Provide more specific error messages
-        if (error.message.includes("API_KEY")) {
+        if (error.message.includes("API_KEY") || error.message.includes("API key")) {
             return res.status(500).json({
-                message: "AI service configuration error. Please contact administrator."
+                message: "AI service configuration error. Please contact administrator.",
+                error: process.env.NODE_ENV === 'development' ? error.message : undefined
             });
         }
         
@@ -132,7 +142,8 @@ Remember: Your goal is to help users learn and understand DSA concepts through t
         }
 
         res.status(500).json({
-            message: "I apologize, but I'm experiencing some technical difficulties right now. Please try again in a moment."
+            message: "I apologize, but I'm experiencing some technical difficulties right now. Please try again in a moment.",
+            error: process.env.NODE_ENV === 'development' ? error.message : undefined
         });
     }
 }

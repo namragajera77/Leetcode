@@ -1,0 +1,78 @@
+{
+  "title": "Add Two Numbers",
+  "description": "Given two integers a and b, return their sum.\n\nExample 1:\nInput: a = 5, b = 3\nOutput: 8\nExplanation: 5 + 3 = 8\n\nExample 2:\nInput: a = -1, b = 4\nOutput: 3\nExplanation: -1 + 4 = 3\n\nConstraints:\n- -1000 <= a, b <= 1000",
+  "difficulty": "easy",
+  "tags": "array",
+  
+  "functionMetadata": {
+    "functionName": "addTwoNumbers",
+    "functionSignature": {
+      "java": "int addTwoNumbers(int a, int b)",
+      "cpp": "int addTwoNumbers(int a, int b)",
+      "javascript": "function addTwoNumbers(a, b)"
+    },
+    "returnType": {
+      "java": "int",
+      "cpp": "int",
+      "javascript": "number"
+    }
+  },
+  
+  "visibleTestCases": [
+    {
+      "input": "5 3",
+      "output": "8",
+      "explanation": "5 + 3 = 8"
+    },
+    {
+      "input": "-1 4",
+      "output": "3",
+      "explanation": "-1 + 4 = 3"
+    }
+  ],
+  
+  "hiddenTestCases": [
+    {
+      "input": "100 200",
+      "output": "300"
+    },
+    {
+      "input": "0 0",
+      "output": "0"
+    },
+    {
+      "input": "-50 50",
+      "output": "0"
+    }
+  ],
+  
+  "referenceSolution": [
+    {
+      "language": "java",
+      "completeCode": "class Solution {\n    public int addTwoNumbers(int a, int b) {\n        return a + b;\n    }\n}"
+    },
+    {
+      "language": "cpp",
+      "completeCode": "class Solution {\npublic:\n    int addTwoNumbers(int a, int b) {\n        return a + b;\n    }\n};"
+    },
+    {
+      "language": "javascript",
+      "completeCode": "function addTwoNumbers(a, b) {\n    return a + b;\n}"
+    }
+  ],
+  
+  "startCode": [
+    {
+      "language": "java",
+      "initialCode": "class Solution {\n    public int addTwoNumbers(int a, int b) {\n        // Write your code here\n        \n    }\n}"
+    },
+    {
+      "language": "cpp",
+      "initialCode": "class Solution {\npublic:\n    int addTwoNumbers(int a, int b) {\n        // Write your code here\n        \n    }\n};"
+    },
+    {
+      "language": "javascript",
+      "initialCode": "function addTwoNumbers(a, b) {\n    // Write your code here\n    \n}"
+    }
+  ]
+}

@@ -1,13 +1,10 @@
 @import "tailwindcss";
 @plugin "daisyui";
 
-/* Import Google Fonts for DSA Visualizer */
+/* Import Google Fonts */
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
 
-/* Import DSA Visualizer styles */
-@import "./styles/visualizer.css";
-
-/* Custom animations for DSA Visualizer */
+/* Custom animations */
 @keyframes float {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-10px); }

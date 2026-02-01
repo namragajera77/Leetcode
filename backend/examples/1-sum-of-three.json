@@ -1,0 +1,78 @@
+{
+  "title": "Sum of Three Numbers",
+  "description": "Write a function that takes three integers as input and returns their sum.\n\nExample:\nInput: a = 2, b = 3, c = 4\nOutput: 9\nExplanation: 2 + 3 + 4 = 9",
+  "difficulty": "easy",
+  "tags": "array",
+  
+  "functionMetadata": {
+    "functionName": "sumOfThree",
+    "functionSignature": {
+      "java": "int sumOfThree(int a, int b, int c)",
+      "cpp": "int sumOfThree(int a, int b, int c)",
+      "javascript": "function sumOfThree(a, b, c)"
+    },
+    "returnType": {
+      "java": "int",
+      "cpp": "int",
+      "javascript": "number"
+    }
+  },
+  
+  "visibleTestCases": [
+    {
+      "input": "2 3 4",
+      "output": "9",
+      "explanation": "2 + 3 + 4 = 9"
+    },
+    {
+      "input": "10 20 30",
+      "output": "60",
+      "explanation": "10 + 20 + 30 = 60"
+    }
+  ],
+  
+  "hiddenTestCases": [
+    {
+      "input": "100 200 300",
+      "output": "600"
+    },
+    {
+      "input": "-5 10 -3",
+      "output": "2"
+    },
+    {
+      "input": "0 0 0",
+      "output": "0"
+    }
+  ],
+  
+  "referenceSolution": [
+    {
+      "language": "java",
+      "completeCode": "class Solution {\n    public int sumOfThree(int a, int b, int c) {\n        return a + b + c;\n    }\n}"
+    },
+    {
+      "language": "c++",
+      "completeCode": "class Solution {\npublic:\n    int sumOfThree(int a, int b, int c) {\n        return a + b + c;\n    }\n};"
+    },
+    {
+      "language": "javascript",
+      "completeCode": "function sumOfThree(a, b, c) {\n    return a + b + c;\n}"
+    }
+  ],
+  
+  "startCode": [
+    {
+      "language": "java",
+      "initialCode": "class Solution {\n    public int sumOfThree(int a, int b, int c) {\n        // Write your code here\n        \n    }\n}"
+    },
+    {
+      "language": "c++",
+      "initialCode": "class Solution {\npublic:\n    int sumOfThree(int a, int b, int c) {\n        // Write your code here\n        \n    }\n};"
+    },
+    {
+      "language": "javascript",
+      "initialCode": "function sumOfThree(a, b, c) {\n    // Write your code here\n    \n}"
+    }
+  ]
+}

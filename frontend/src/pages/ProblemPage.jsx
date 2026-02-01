@@ -8,7 +8,7 @@ import ChatAI from '../components/ChatAI';
 import Editorial from '../components/Editorial';
 
 const langMap = {
-  cpp: 'c++',
+  cpp: 'cpp',
   java: 'java',
   javascript: 'javascript'
 };
@@ -86,7 +86,10 @@ const ProblemPage = () => {
         
         // Load persisted code for the current language, or use initial code
         const persistedCode = loadFromStorage(`code_${selectedLanguage}`, '');
-        const initialCode = response.data.startCode.find(sc => sc.language === langMap[selectedLanguage]).initialCode;
+        
+        // Safely get initial code with fallback
+        const startCodeForLang = response.data.startCode?.find(sc => sc.language === langMap[selectedLanguage]);
+        const initialCode = startCodeForLang?.initialCode || '// Write your code here';
         
         setProblem(response.data);
         
@@ -108,7 +111,11 @@ const ProblemPage = () => {
     if (problem) {
       // Load persisted code for the new language, or use initial code
       const persistedCode = loadFromStorage(`code_${selectedLanguage}`, '');
-      const initialCode = problem.startCode.find(sc => sc.language === langMap[selectedLanguage]).initialCode;
+      
+      // Safely get initial code with fallback
+      const startCodeForLang = problem.startCode?.find(sc => sc.language === langMap[selectedLanguage]);
+      const initialCode = startCodeForLang?.initialCode || '// Write your code here';
+      
       setCode(persistedCode || initialCode);
     }
   }, [selectedLanguage, problem]);
@@ -133,6 +140,7 @@ const ProblemPage = () => {
     setRunResult(null);
     
     try {
+      // Backend auto-detects LeetCode-style vs Legacy based on functionMetadata
       const response = await axiosClient.post(`/submission/run/${problemId}`, {
         code,
         language: selectedLanguage
@@ -148,7 +156,7 @@ const ProblemPage = () => {
       console.error('Error running code:', error);
       setRunResult({
         success: false,
-        error: 'Internal server error'
+        error: error.response?.data || 'Internal server error'
       });
       setLoading(false);
       setActiveRightTab('testcase');
@@ -160,7 +168,8 @@ const ProblemPage = () => {
     setSubmitResult(null);
     
     try {
-        const response = await axiosClient.post(`/submission/submit/${problemId}`, {
+      // Backend auto-detects LeetCode-style vs Legacy based on functionMetadata
+      const response = await axiosClient.post(`/submission/submit/${problemId}`, {
         code:code,
         language: selectedLanguage
       });
@@ -171,7 +180,10 @@ const ProblemPage = () => {
       
     } catch (error) {
       console.error('Error submitting code:', error);
-      setSubmitResult(null);
+      setSubmitResult({
+        success: false,
+        error: error.response?.data || 'Submission failed'
+      });
       setLoading(false);
       setActiveRightTab('result');
     }

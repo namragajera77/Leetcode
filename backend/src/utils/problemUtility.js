@@ -5,6 +5,7 @@ const getLanguageById = (lang)=>{
 
     const language = {
         "c++":54,
+        "cpp":54,  // Support both cpp and c++
         "java":62,
         "javascript":63
     }
