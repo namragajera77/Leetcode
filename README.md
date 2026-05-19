@@ -1,10 +1,8 @@
 # Online Coding Platform
 
-**Visualize • Solve • Master Algorithms**
+**Solve • Master Algorithms**
 
-A comprehensive algorithm learning platform built with React, Node.js, and MongoDB. NG AlgoVista combines interactive problem-solving with algorithm visualization to help developers build deep understanding and coding confidence.
-
-
+A comprehensive algorithm learning platform built with React, Node.js, and MongoDB.
 ## ✨ Key Features
 
 ### 🎯 Core Learning Experience
