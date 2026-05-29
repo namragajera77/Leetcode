@@ -1,154 +1,173 @@
 import { Link } from 'react-router';
-import { Code2, Sparkles, TrendingUp, Eye, Zap, BookOpen, ArrowRight } from 'lucide-react';
+import { ArrowRight, BookOpen, Braces, Code2, Eye, Gauge, Sparkles, TerminalSquare, Zap } from 'lucide-react';
+
+const features = [
+  {
+    icon: Eye,
+    title: 'Visual algorithm learning',
+    description: 'Turn abstract data movement into clear steps, states, and patterns you can actually remember.',
+  },
+  {
+    icon: TerminalSquare,
+    title: 'Real coding workspace',
+    description: 'Practice in a focused LeetCode-style editor with instant runs, submissions, and feedback.',
+  },
+  {
+    icon: Sparkles,
+    title: 'AI-guided debugging',
+    description: 'Ask targeted questions when stuck and learn the reasoning behind each solution path.',
+  },
+];
+
+const stats = [
+  ['3', 'Languages'],
+  ['24/7', 'Practice'],
+  ['AI', 'Mentor'],
+];
 
 const LandingPage = () => (
-  <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 text-white overflow-hidden relative">
-    {/* Ambient glow effects */}
-    <div className="absolute top-0 left-0 w-96 h-96 bg-purple-500/30 rounded-full blur-3xl animate-pulse"></div>
-    <div className="absolute bottom-0 right-0 w-96 h-96 bg-pink-500/30 rounded-full blur-3xl animate-pulse delay-1000"></div>
-    
-    {/* Header/Navbar */}
-    <nav className="relative z-10 flex justify-between items-center px-8 lg:px-16 py-6 bg-white/5 backdrop-blur-xl shadow-2xl border-b border-white/10">
-      <div className="flex flex-col">
-        <h1 className="text-3xl lg:text-4xl font-black tracking-tight bg-gradient-to-r from-white via-purple-200 to-pink-200 bg-clip-text text-transparent flex items-center gap-2">
-          <Code2 className="h-8 w-8 text-purple-300" />
-          NG AlgoVista
-        </h1>
-        <p className="text-xs lg:text-sm text-purple-200/80 ml-10 mt-1 font-light tracking-wide">
-          Learn. Visualize. Master Algorithms.
-        </p>
-      </div>
-      <div className="flex items-center gap-4 lg:gap-6">
-        <Link 
-          to="/about" 
-          className="text-purple-200 hover:text-white transition-colors font-medium hidden sm:block"
-        >
-          About
+  <main className="app-shell text-slate-100">
+    <nav className="sticky top-0 z-40 border-b border-slate-700/40 bg-slate-950/70 backdrop-blur-2xl">
+      <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 lg:px-8">
+        <Link to="/" className="flex items-center gap-3">
+          <span className="flex h-10 w-10 items-center justify-center rounded-lg accent-gradient text-slate-950 shadow-lg shadow-cyan-500/15">
+            <Code2 className="h-6 w-6" />
+          </span>
+          <span>
+            <span className="block text-lg font-black leading-tight tracking-tight text-white">NG AlgoVista</span>
+            <span className="block text-xs font-medium text-slate-400">Visualize. Solve. Master.</span>
+          </span>
         </Link>
-        <Link 
-          to="/contact" 
-          className="text-purple-200 hover:text-white transition-colors font-medium hidden sm:block"
-        >
-          Contact
-        </Link>
-        <Link 
-          to="/login" 
-          className="px-5 lg:px-6 py-2.5 rounded-xl border-2 border-white/30 hover:border-white/60 hover:bg-white/10 transition-all duration-300 font-semibold text-sm lg:text-base backdrop-blur-sm"
-        >
-          Sign In
-        </Link>
-        <Link 
-          to="/signup" 
-          className="px-5 lg:px-6 py-2.5 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 shadow-lg hover:shadow-purple-500/50 transition-all duration-300 font-semibold text-sm lg:text-base flex items-center gap-2"
-        >
-          Get Started
-          <ArrowRight className="h-4 w-4" />
-        </Link>
+
+        <div className="flex items-center gap-2 sm:gap-3">
+          <Link to="/about" className="hidden rounded-lg px-3 py-2 text-sm font-semibold text-slate-300 hover:bg-slate-800 hover:text-white sm:inline-flex">
+            About
+          </Link>
+          <Link to="/contact" className="hidden rounded-lg px-3 py-2 text-sm font-semibold text-slate-300 hover:bg-slate-800 hover:text-white sm:inline-flex">
+            Contact
+          </Link>
+          <Link to="/login" className="rounded-lg px-4 py-2 text-sm font-bold text-slate-200 ring-1 ring-slate-700 transition hover:bg-slate-800">
+            Sign in
+          </Link>
+          <Link to="/signup" className="btn-primary-premium inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-black transition">
+            Start
+            <ArrowRight className="h-4 w-4" />
+          </Link>
+        </div>
       </div>
     </nav>
 
-    {/* Hero Section */}
-    <section className="relative z-10 flex flex-col items-center justify-center px-8 py-20 lg:py-32 text-center">
-      <div className="mb-6 inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-md rounded-full border border-white/20 text-sm font-medium">
-        <Sparkles className="h-4 w-4 text-yellow-300" />
-        <span className="text-purple-200">AI-Powered Learning Platform</span>
-      </div>
-      
-      <h1 className="text-5xl lg:text-7xl font-black mb-6 leading-tight max-w-5xl">
-        <span className="bg-gradient-to-r from-white via-purple-100 to-pink-100 bg-clip-text text-transparent drop-shadow-2xl">
-          Visualize Algorithms.
-        </span>
-        <br />
-        <span className="bg-gradient-to-r from-pink-200 via-purple-200 to-indigo-200 bg-clip-text text-transparent">
-          Solve with Confidence.
-        </span>
-      </h1>
-      
-      <p className="text-lg lg:text-xl text-purple-100/90 mb-12 max-w-3xl leading-relaxed font-light">
-        NG AlgoVista helps you understand data structures and algorithms through 
-        <span className="font-semibold text-white"> interactive visualization</span> and 
-        <span className="font-semibold text-white"> real coding problems</span> — 
-        powered by real execution and AI guidance.
-      </p>
-      
-      <div className="flex flex-col sm:flex-row gap-4 lg:gap-6">
-        <Link 
-          to="/signup" 
-          className="group px-8 lg:px-10 py-4 lg:py-5 rounded-2xl bg-gradient-to-r from-purple-500 via-pink-500 to-purple-600 hover:from-purple-600 hover:via-pink-600 hover:to-purple-700 shadow-2xl hover:shadow-purple-500/60 transition-all duration-300 font-bold text-lg lg:text-xl flex items-center justify-center gap-3"
-        >
-          Start Learning Free
-          <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
-        </Link>
-        <Link 
-          to="/signup" 
-          className="px-8 lg:px-10 py-4 lg:py-5 rounded-2xl border-2 border-white/40 hover:border-white/70 hover:bg-white/10 backdrop-blur-md transition-all duration-300 font-bold text-lg lg:text-xl flex items-center justify-center gap-3"
-        >
-          <Eye className="h-5 w-5" />
-          Explore Visualizer
-        </Link>
+    <section className="mx-auto grid max-w-7xl items-center gap-12 px-5 pb-14 pt-12 lg:grid-cols-[1.02fr_0.98fr] lg:px-8 lg:pb-20 lg:pt-16">
+      <div>
+        <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-cyan-400/20 bg-cyan-400/10 px-3 py-1.5 text-sm font-bold text-cyan-200">
+          <Zap className="h-4 w-4" />
+          Built for serious DSA practice
+        </div>
+        <h1 className="max-w-4xl text-5xl font-black leading-[1.02] tracking-tight text-white sm:text-6xl lg:text-7xl">
+          Code like the logic is visible.
+        </h1>
+        <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-300">
+          NG AlgoVista blends algorithm visualization, real problem solving, and AI support into one calm, high-performance learning workspace.
+        </p>
+        <div className="mt-9 flex flex-col gap-3 sm:flex-row">
+          <Link to="/signup" className="btn-primary-premium inline-flex items-center justify-center gap-2 rounded-lg px-6 py-3.5 text-base font-black transition">
+            Create free account
+            <ArrowRight className="h-5 w-5" />
+          </Link>
+          <Link to="/login" className="btn-secondary-premium inline-flex items-center justify-center gap-2 rounded-lg px-6 py-3.5 text-base font-bold transition">
+            Open workspace
+          </Link>
+        </div>
+
+        <div className="mt-10 grid max-w-xl grid-cols-3 gap-3">
+          {stats.map(([value, label]) => (
+            <div key={label} className="premium-card px-4 py-4">
+              <div className="text-2xl font-black text-white">{value}</div>
+              <div className="mt-1 text-xs font-semibold uppercase text-slate-400">{label}</div>
+            </div>
+          ))}
+        </div>
       </div>
 
-      {/* Badge */}
-      <div className="mt-16 flex flex-col items-center gap-2">
-        <div className="px-6 py-2 bg-gradient-to-r from-indigo-500/20 to-purple-500/20 backdrop-blur-md rounded-full border border-indigo-300/30">
-          <p className="text-sm font-semibold text-indigo-200">Built by Namra Gajera</p>
+      <div className="relative">
+        <div className="surface-strong overflow-hidden rounded-lg">
+          <div className="flex items-center justify-between border-b border-slate-700/60 px-4 py-3">
+            <div className="flex items-center gap-2">
+              <span className="h-3 w-3 rounded-full bg-red-400"></span>
+              <span className="h-3 w-3 rounded-full bg-amber-400"></span>
+              <span className="h-3 w-3 rounded-full bg-emerald-400"></span>
+            </div>
+            <span className="text-xs font-bold text-slate-400">two-sum.js</span>
+          </div>
+          <div className="grid min-h-[420px] lg:grid-cols-[0.8fr_1.2fr]">
+            <div className="border-b border-slate-700/60 bg-slate-950/55 p-5 lg:border-b-0 lg:border-r">
+              <div className="mb-4 flex items-center gap-2 text-sm font-bold text-cyan-300">
+                <BookOpen className="h-4 w-4" />
+                Problem
+              </div>
+              <h2 className="text-xl font-black text-white">Two Sum</h2>
+              <p className="mt-3 text-sm leading-6 text-slate-400">
+                Return indices of two numbers that add up to target.
+              </p>
+              <div className="mt-6 space-y-3">
+                {['Hash Map', 'Array', 'Easy'].map((item) => (
+                  <span key={item} className="mr-2 inline-flex rounded-md border border-slate-700 bg-slate-900 px-2.5 py-1 text-xs font-bold text-slate-300">
+                    {item}
+                  </span>
+                ))}
+              </div>
+              <div className="mt-8 rounded-lg border border-emerald-400/20 bg-emerald-400/10 p-4">
+                <div className="flex items-center gap-2 text-sm font-black text-emerald-300">
+                  <Gauge className="h-4 w-4" />
+                  Accepted
+                </div>
+                <p className="mt-2 text-xs leading-5 text-emerald-100/80">Runtime 42 ms. Memory 44.8 MB.</p>
+              </div>
+            </div>
+            <div className="bg-[#070b12] p-5 font-mono text-sm leading-7 text-slate-300">
+              <p><span className="text-fuchsia-300">function</span> <span className="text-cyan-300">twoSum</span>(nums, target) {'{'}</p>
+              <p className="pl-5"><span className="text-fuchsia-300">const</span> seen = <span className="text-fuchsia-300">new</span> Map();</p>
+              <p className="pl-5"><span className="text-fuchsia-300">for</span> (<span className="text-fuchsia-300">let</span> i = 0; i &lt; nums.length; i++) {'{'}</p>
+              <p className="pl-10"><span className="text-fuchsia-300">const</span> need = target - nums[i];</p>
+              <p className="pl-10"><span className="text-fuchsia-300">if</span> (seen.has(need)) {'{'}</p>
+              <p className="pl-14 text-emerald-300">return [seen.get(need), i];</p>
+              <p className="pl-10">{'}'}</p>
+              <p className="pl-10">seen.set(nums[i], i);</p>
+              <p className="pl-5">{'}'}</p>
+              <p>{'}'}</p>
+              <div className="mt-8 rounded-lg border border-cyan-400/20 bg-cyan-400/10 p-4 font-sans">
+                <div className="flex items-center gap-2 text-sm font-black text-cyan-200">
+                  <Braces className="h-4 w-4" />
+                  Trace
+                </div>
+                <div className="mt-3 grid grid-cols-4 gap-2 text-center text-xs font-bold">
+                  {[2, 7, 11, 15].map((num, index) => (
+                    <div key={num} className={`rounded-md border px-3 py-3 ${index === 1 ? 'border-emerald-400 bg-emerald-400/20 text-emerald-200' : 'border-slate-700 bg-slate-900 text-slate-300'}`}>
+                      {num}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-        <p className="text-xs text-purple-300/70 font-light italic">Student-built, industry-inspired</p>
       </div>
     </section>
 
-    {/* Feature Highlights */}
-    <section className="relative z-10 px-8 lg:px-16 py-20 lg:py-24">
-      <div className="max-w-7xl mx-auto grid md:grid-cols-3 gap-8 lg:gap-10">
-        
-        {/* Feature 1: Algorithm Visualization */}
-        <div className="group bg-white/5 backdrop-blur-xl rounded-3xl p-8 lg:p-10 shadow-2xl border border-white/10 hover:border-purple-400/50 hover:bg-white/10 transition-all duration-500 hover:scale-105 hover:shadow-purple-500/30">
-          <div className="mb-6 w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-lg group-hover:shadow-purple-500/50 transition-all duration-300">
-            <Eye className="h-8 w-8 text-white" />
-          </div>
-          <h3 className="text-2xl lg:text-3xl font-bold mb-4 text-white">Algorithm Visualization</h3>
-          <p className="text-purple-100/80 leading-relaxed">
-            See algorithms work step-by-step — sorting, searching, graphs, and more. 
-            Watch data transform in real-time.
-          </p>
-        </div>
-
-        {/* Feature 2: Real Coding Problems */}
-        <div className="group bg-white/5 backdrop-blur-xl rounded-3xl p-8 lg:p-10 shadow-2xl border border-white/10 hover:border-pink-400/50 hover:bg-white/10 transition-all duration-500 hover:scale-105 hover:shadow-pink-500/30">
-          <div className="mb-6 w-16 h-16 rounded-2xl bg-gradient-to-br from-pink-500 to-purple-500 flex items-center justify-center shadow-lg group-hover:shadow-pink-500/50 transition-all duration-300">
-            <Zap className="h-8 w-8 text-white" />
-          </div>
-          <h3 className="text-2xl lg:text-3xl font-bold mb-4 text-white">Real Coding Problems</h3>
-          <p className="text-purple-100/80 leading-relaxed">
-            Solve problems using a real LeetCode-style judge with function-based execution. 
-            Practice with instant feedback.
-          </p>
-        </div>
-
-        {/* Feature 3: Learn Smarter */}
-        <div className="group bg-white/5 backdrop-blur-xl rounded-3xl p-8 lg:p-10 shadow-2xl border border-white/10 hover:border-indigo-400/50 hover:bg-white/10 transition-all duration-500 hover:scale-105 hover:shadow-indigo-500/30">
-          <div className="mb-6 w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center shadow-lg group-hover:shadow-indigo-500/50 transition-all duration-300">
-            <BookOpen className="h-8 w-8 text-white" />
-          </div>
-          <h3 className="text-2xl lg:text-3xl font-bold mb-4 text-white">Learn Smarter</h3>
-          <p className="text-purple-100/80 leading-relaxed">
-            Understand logic faster with visual flow, AI explanations, and real-time 
-            performance feedback.
-          </p>
-        </div>
+    <section className="mx-auto max-w-7xl px-5 pb-20 lg:px-8">
+      <div className="grid gap-4 md:grid-cols-3">
+        {features.map(({ icon: Icon, title, description }) => (
+          <article key={title} className="premium-card p-6">
+            <div className="mb-5 flex h-11 w-11 items-center justify-center rounded-lg bg-slate-900 text-cyan-300 ring-1 ring-cyan-400/20">
+              <Icon className="h-5 w-5" />
+            </div>
+            <h3 className="text-lg font-black text-white">{title}</h3>
+            <p className="mt-3 text-sm leading-6 text-slate-400">{description}</p>
+          </article>
+        ))}
       </div>
     </section>
-
-    {/* Footer */}
-    <footer className="relative z-10 text-center py-12 border-t border-white/10 bg-white/5 backdrop-blur-md">
-      <p className="text-lg lg:text-xl font-semibold text-purple-200 mb-2 italic">
-        Not just practice. Real understanding.
-      </p>
-      <p className="text-sm text-purple-300/60">
-        © 2026 NG AlgoVista. Crafted with passion for learners.
-      </p>
-    </footer>
-  </div>
+  </main>
 );
 
 export default LandingPage;

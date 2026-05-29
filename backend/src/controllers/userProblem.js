@@ -268,6 +268,39 @@ const getAllProblem = async (req, res) => {
     }
 };
 
+const getAllProblemWithVideos = async (req, res) => {
+    try {
+        const problems = await Problem.find({}).select('title description difficulty tags');
+        const videos = await SolutionVideo.find({}).select('problemId secureUrl thumbnailUrl duration createdAt cloudinaryPublicId');
+
+        const videoMap = new Map(
+            videos.map((video) => [video.problemId.toString(), video])
+        );
+
+        const result = problems.map((problem) => {
+            const video = videoMap.get(problem._id.toString());
+
+            return {
+                ...problem.toObject(),
+                hasVideo: Boolean(video),
+                videoInfo: video
+                    ? {
+                        secureUrl: video.secureUrl,
+                        thumbnailUrl: video.thumbnailUrl,
+                        duration: video.duration,
+                        uploadedAt: video.createdAt,
+                        cloudinaryPublicId: video.cloudinaryPublicId,
+                    }
+                    : null,
+            };
+        });
+
+        return res.status(200).json(result);
+    } catch (err) {
+        return res.status(500).send('Error: ' + err.message);
+    }
+};
+
 
 
 const solvedallProblembyuser = async (req, res) => {
@@ -311,4 +344,4 @@ const submittedproblem = async (req,res) => {
 
 
 
-module.exports = {createProblem,updateproblem,deleteproblem,getproblembyid,getAllProblem,solvedallProblembyuser,submittedproblem};
+module.exports = {createProblem,updateproblem,deleteproblem,getproblembyid,getAllProblem,getAllProblemWithVideos,solvedallProblembyuser,submittedproblem};

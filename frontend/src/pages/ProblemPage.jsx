@@ -1,18 +1,28 @@
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import Editor from '@monaco-editor/react';
 import { useParams } from 'react-router';
-import axiosClient from "../utils/axiosClient"
-import SubmissionHistory from "../components/SubmissionHistory"
+import { Bot, CheckCircle, ChevronDown, ChevronRight, Code2, FileText, History, Lightbulb, Play, Send, Terminal, XCircle } from 'lucide-react';
+import axiosClient from '../utils/axiosClient';
+import SubmissionHistory from '../components/SubmissionHistory';
 import ChatAI from '../components/ChatAI';
 import Editorial from '../components/Editorial';
 
-const langMap = {
-  cpp: 'cpp',
-  java: 'java',
-  javascript: 'javascript'
-};
+const langMap = { cpp: 'cpp', java: 'java', javascript: 'javascript' };
 
+const leftTabs = [
+  ['description', FileText, 'Description'],
+  ['editorial', Lightbulb, 'Editorial'],
+  ['solutions', Code2, 'Solutions'],
+  ['submissions', History, 'Submissions'],
+  ['chatAI', Bot, 'AI Chat'],
+];
+
+const rightTabs = [
+  ['code', Code2, 'Code'],
+  ['testcase', Terminal, 'Testcase'],
+  ['result', Send, 'Result'],
+];
 
 const ProblemPage = () => {
   const [problem, setProblem] = useState(null);
@@ -25,21 +35,13 @@ const ProblemPage = () => {
   const [activeRightTab, setActiveRightTab] = useState('code');
   const [expandedTestCase, setExpandedTestCase] = useState(null);
   const editorRef = useRef(null);
-  let {problemId}  = useParams();
-
+  const { problemId } = useParams();
   const { handleSubmit } = useForm();
 
-  // Helper functions for localStorage
   const getStorageKey = (key) => `problem_${problemId}_${key}`;
-  
   const saveToStorage = (key, value) => {
-    try {
-      localStorage.setItem(getStorageKey(key), JSON.stringify(value));
-    } catch (error) {
-      console.warn('Failed to save to localStorage:', error);
-    }
+    try { localStorage.setItem(getStorageKey(key), JSON.stringify(value)); } catch (error) { console.warn('Failed to save to localStorage:', error); }
   };
-  
   const loadFromStorage = (key, defaultValue) => {
     try {
       const stored = localStorage.getItem(getStorageKey(key));
@@ -50,56 +52,29 @@ const ProblemPage = () => {
     }
   };
 
-  // Load persisted state on component mount
   useEffect(() => {
-    const persistedLanguage = loadFromStorage('selectedLanguage', 'javascript');
-    const persistedLeftTab = loadFromStorage('activeLeftTab', 'description');
-    const persistedRightTab = loadFromStorage('activeRightTab', 'code');
-    
-    setSelectedLanguage(persistedLanguage);
-    setActiveLeftTab(persistedLeftTab);
-    setActiveRightTab(persistedRightTab);
+    setSelectedLanguage(loadFromStorage('selectedLanguage', 'javascript'));
+    setActiveLeftTab(loadFromStorage('activeLeftTab', 'description'));
+    setActiveRightTab(loadFromStorage('activeRightTab', 'code'));
   }, [problemId]);
 
-  // Save state changes to localStorage
-  useEffect(() => {
-    saveToStorage('selectedLanguage', selectedLanguage);
-  }, [selectedLanguage, problemId]);
+  useEffect(() => saveToStorage('selectedLanguage', selectedLanguage), [selectedLanguage, problemId]);
+  useEffect(() => saveToStorage('activeLeftTab', activeLeftTab), [activeLeftTab, problemId]);
+  useEffect(() => saveToStorage('activeRightTab', activeRightTab), [activeRightTab, problemId]);
 
-  useEffect(() => {
-    saveToStorage('activeLeftTab', activeLeftTab);
-  }, [activeLeftTab, problemId]);
-
-  useEffect(() => {
-    saveToStorage('activeRightTab', activeRightTab);
-  }, [activeRightTab, problemId]);
-
-
-
-
-  // Fetch problem data
   useEffect(() => {
     const fetchProblem = async () => {
       setLoading(true);
       try {
-        
         const response = await axiosClient.get(`/problem/problemById/${problemId}`);
-        
-        // Load persisted code for the current language, or use initial code
         const persistedCode = loadFromStorage(`code_${selectedLanguage}`, '');
-        
-        // Safely get initial code with fallback
-        const startCodeForLang = response.data.startCode?.find(sc => sc.language === langMap[selectedLanguage]);
+        const startCodeForLang = response.data.startCode?.find((sc) => sc.language === langMap[selectedLanguage]);
         const initialCode = startCodeForLang?.initialCode || '// Write your code here';
-        
         setProblem(response.data);
-        
-        // Use persisted code if available, otherwise use initial code
         setCode(persistedCode || initialCode);
-        setLoading(false);
-        
       } catch (error) {
         console.error('Error fetching problem:', error);
+      } finally {
         setLoading(false);
       }
     };
@@ -107,659 +82,316 @@ const ProblemPage = () => {
     fetchProblem();
   }, [problemId]);
 
-  // Update code when language changes
   useEffect(() => {
-    if (problem) {
-      // Load persisted code for the new language, or use initial code
-      const persistedCode = loadFromStorage(`code_${selectedLanguage}`, '');
-      
-      // Safely get initial code with fallback
-      const startCodeForLang = problem.startCode?.find(sc => sc.language === langMap[selectedLanguage]);
-      const initialCode = startCodeForLang?.initialCode || '// Write your code here';
-      
-      setCode(persistedCode || initialCode);
-    }
+    if (!problem) return;
+    const persistedCode = loadFromStorage(`code_${selectedLanguage}`, '');
+    const startCodeForLang = problem.startCode?.find((sc) => sc.language === langMap[selectedLanguage]);
+    setCode(persistedCode || startCodeForLang?.initialCode || '// Write your code here');
   }, [selectedLanguage, problem]);
 
   const handleEditorChange = (value) => {
     const newCode = value || '';
     setCode(newCode);
-    // Save code to localStorage for the current language
     saveToStorage(`code_${selectedLanguage}`, newCode);
-  };
-
-  const handleEditorDidMount = (editor) => {
-    editorRef.current = editor;
-  };
-
-  const handleLanguageChange = (language) => {
-    setSelectedLanguage(language);
   };
 
   const handleRun = async () => {
     setLoading(true);
     setRunResult(null);
-    
     try {
-      // Backend auto-detects LeetCode-style vs Legacy based on functionMetadata
-      const response = await axiosClient.post(`/submission/run/${problemId}`, {
-        code,
-        language: selectedLanguage
-      });
-
-      console.log(response)
-
+      const response = await axiosClient.post(`/submission/run/${problemId}`, { code, language: selectedLanguage });
       setRunResult(response.data);
-      setLoading(false);
       setActiveRightTab('testcase');
-      
     } catch (error) {
       console.error('Error running code:', error);
-      setRunResult({
-        success: false,
-        error: error.response?.data || 'Internal server error'
-      });
-      setLoading(false);
+      setRunResult({ success: false, error: error.response?.data || 'Internal server error' });
       setActiveRightTab('testcase');
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleSubmitCode = async () => {
     setLoading(true);
     setSubmitResult(null);
-    
     try {
-      // Backend auto-detects LeetCode-style vs Legacy based on functionMetadata
-      const response = await axiosClient.post(`/submission/submit/${problemId}`, {
-        code:code,
-        language: selectedLanguage
-      });
-
-       setSubmitResult(response.data);
-       setLoading(false);
-       setActiveRightTab('result');
-      
+      const response = await axiosClient.post(`/submission/submit/${problemId}`, { code, language: selectedLanguage });
+      setSubmitResult(response.data);
+      setActiveRightTab('result');
     } catch (error) {
       console.error('Error submitting code:', error);
-      setSubmitResult({
-        success: false,
-        error: error.response?.data || 'Submission failed'
-      });
-      setLoading(false);
+      setSubmitResult({ success: false, error: error.response?.data || 'Submission failed' });
       setActiveRightTab('result');
+    } finally {
+      setLoading(false);
     }
-  };
-
-  const getLanguageForMonaco = (lang) => {
-    switch (lang) {
-      case 'javascript': return 'javascript';
-      case 'java': return 'java';
-      case 'cpp': return 'cpp';
-      default: return 'javascript';
-    }
-  };
-
-  const getDifficultyColor = (difficulty) => {
-    switch (difficulty) {
-      case 'easy': return 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30';
-      case 'medium': return 'text-yellow-400 bg-yellow-500/10 border-yellow-500/30';
-      case 'hard': return 'text-red-400 bg-red-500/10 border-red-500/30';
-      default: return 'text-gray-400 bg-gray-500/10 border-gray-500/30';
-    }
-  };
-
-  const toggleTestCase = (index) => {
-    setExpandedTestCase(expandedTestCase === index ? null : index);
   };
 
   if (loading && !problem) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
-        <span className="loading loading-spinner loading-lg"></span>
+      <div className="app-shell flex min-h-screen items-center justify-center">
+        <span className="loading loading-spinner loading-lg text-cyan-300"></span>
       </div>
     );
   }
 
   return (
-    <div className="h-screen flex bg-slate-900">
-      {/* Left Panel */}
-      <div className="w-1/2 flex flex-col border-r border-slate-700/50">
-        {/* Left Tabs */}
-        <div className="bg-slate-800/80 backdrop-blur-sm px-4 py-2 border-b border-slate-700/50">
-          <div className="flex items-center gap-1">
-            <button 
-              className={`px-3 py-2 rounded text-sm font-medium transition-all ${
-                activeLeftTab === 'description' 
-                  ? 'bg-slate-700 text-white' 
-                  : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
-              }`}
-              onClick={() => setActiveLeftTab('description')}
-            >
-              Description
-            </button>
-            <button 
-              className={`px-3 py-2 rounded text-sm font-medium transition-all ${
-                activeLeftTab === 'editorial' 
-                  ? 'bg-slate-700 text-white' 
-                  : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
-              }`}
-              onClick={() => setActiveLeftTab('editorial')}
-            >
-              Editorial
-            </button>
-            <button 
-              className={`px-3 py-2 rounded text-sm font-medium transition-all ${
-                activeLeftTab === 'solutions' 
-                  ? 'bg-slate-700 text-white' 
-                  : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
-              }`}
-              onClick={() => setActiveLeftTab('solutions')}
-            >
-              Solutions
-            </button>
-            <button 
-              className={`px-3 py-2 rounded text-sm font-medium transition-all ${
-                activeLeftTab === 'submissions' 
-                  ? 'bg-slate-700 text-white' 
-                  : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
-              }`}
-              onClick={() => setActiveLeftTab('submissions')}
-            >
-              Submissions
-            </button>
-            <button 
-              className={`px-3 py-2 rounded text-sm font-medium transition-all ${
-                activeLeftTab === 'chatAI' 
-                  ? 'bg-slate-700 text-white' 
-                  : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
-              }`}
-              onClick={() => setActiveLeftTab('chatAI')}
-            >
-              AI Chat
-            </button>
+    <main className="h-screen overflow-hidden bg-[#080b12] text-slate-100">
+      <div className="grid h-full grid-cols-1 lg:grid-cols-2">
+        <section className="flex min-h-0 flex-col border-r border-slate-700/50">
+          <TabBar tabs={leftTabs} active={activeLeftTab} setActive={setActiveLeftTab} />
+          <div className="min-h-0 flex-1 overflow-y-auto bg-slate-950/70 p-5 lg:p-6">
+            {problem && (
+              <>
+                {activeLeftTab === 'description' && <Description problem={problem} />}
+                {activeLeftTab === 'editorial' && (
+                  <PanelTitle title="Editorial" subtitle="Detailed explanation and approach analysis">
+                    <Editorial secureUrl={problem.secureUrl} thumbnailUrl={problem.thumbnailUrl} duration={problem.duration} />
+                  </PanelTitle>
+                )}
+                {activeLeftTab === 'solutions' && <Solutions problem={problem} />}
+                {activeLeftTab === 'submissions' && (
+                  <PanelTitle title="My Submissions" subtitle="Track your submission history and performance">
+                    <SubmissionHistory problemId={problemId} />
+                  </PanelTitle>
+                )}
+                {activeLeftTab === 'chatAI' && <ChatAI problem={problem} problemId={problemId} />}
+              </>
+            )}
           </div>
-        </div>
+        </section>
 
-        {/* Left Content */}
-        <div className="flex-1 overflow-y-auto p-6 bg-slate-900">
-          {problem && (
-            <>
-              {activeLeftTab === 'description' && (
-                <div className="space-y-6">
-                  {/* Problem Header */}
-                  <div>
-                    <h1 className="text-2xl font-bold text-white mb-3">{problem.title}</h1>
-                    <div className="flex items-center gap-3">
-                      <span className={`px-3 py-1 rounded-full text-xs font-medium border ${getDifficultyColor(problem.difficulty)}`}>
-                        {problem.difficulty.charAt(0).toUpperCase() + problem.difficulty.slice(1)}
-                      </span>
-                      <span className="px-3 py-1 rounded-full text-xs font-medium bg-slate-700/50 text-slate-300 border border-slate-600">
-                        {problem.tags}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Description */}
-                  <div className="bg-slate-800/50 rounded-lg border border-slate-700/50 p-5">
-                    <h2 className="text-sm font-semibold text-slate-300 mb-3">Problem Description</h2>
-                    <div className="text-slate-300 text-sm leading-relaxed whitespace-pre-wrap">
-                      {problem.description}
-                    </div>
-                  </div>
-
-                  {/* Examples */}
-                  <div className="space-y-4">
-                    <h3 className="text-sm font-semibold text-slate-300">Examples</h3>
-                    {problem.visibleTestCases.map((example, index) => (
-                      <div key={index} className="bg-slate-800/50 rounded-lg border border-slate-700/50 p-4">
-                        <div className="text-xs font-medium text-emerald-400 mb-3">Example {index + 1}</div>
-                        <div className="space-y-3">
-                          <div>
-                            <div className="text-xs text-slate-400 mb-1">Input:</div>
-                            <pre className="font-mono text-xs bg-slate-900 text-slate-200 p-2 rounded border border-slate-700/50 overflow-x-auto">
-{example.input}
-                            </pre>
-                          </div>
-                          <div>
-                            <div className="text-xs text-slate-400 mb-1">Output:</div>
-                            <pre className="font-mono text-xs bg-slate-900 text-slate-200 p-2 rounded border border-slate-700/50 overflow-x-auto">
-{example.output}
-                            </pre>
-                          </div>
-                          {example.explanation && (
-                            <div>
-                              <div className="text-xs text-slate-400 mb-1">Explanation:</div>
-                              <div className="text-xs text-slate-300 leading-relaxed">
-                                {example.explanation}
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      </div>
+        <section className="flex min-h-0 flex-col">
+          <TabBar tabs={rightTabs} active={activeRightTab} setActive={setActiveRightTab} />
+          <div className="min-h-0 flex-1 bg-slate-950">
+            {activeRightTab === 'code' && (
+              <form onSubmit={handleSubmit(handleSubmitCode)} className="flex h-full flex-col">
+                <div className="flex items-center justify-between border-b border-slate-700/50 bg-slate-900/80 px-4 py-3">
+                  <div className="flex gap-2">
+                    {['javascript', 'java', 'cpp'].map((lang) => (
+                      <button key={lang} type="button" className={`rounded-lg px-3 py-2 text-xs font-black transition ${selectedLanguage === lang ? 'bg-cyan-300 text-slate-950' : 'bg-slate-800 text-slate-300 ring-1 ring-slate-700 hover:bg-slate-700'}`} onClick={() => setSelectedLanguage(lang)}>
+                        {lang === 'cpp' ? 'C++' : lang === 'javascript' ? 'JavaScript' : 'Java'}
+                      </button>
                     ))}
                   </div>
                 </div>
-              )}
 
-              {activeLeftTab === 'editorial' && (
-                <div className="space-y-4">
-                  <div>
-                    <h2 className="text-xl font-bold text-white mb-2">Editorial</h2>
-                    <p className="text-sm text-slate-400">Detailed explanation and approach analysis</p>
-                  </div>
-                  <div className="bg-slate-800/50 rounded-lg border border-slate-700/50 p-5">
-                    <Editorial secureUrl={problem.secureUrl} thumbnailUrl={problem.thumbnailUrl} duration={problem.duration}/>
-                  </div>
+                <div className="min-h-0 flex-1">
+                  <Editor
+                    height="100%"
+                    language={selectedLanguage === 'cpp' ? 'cpp' : selectedLanguage}
+                    value={code}
+                    onChange={handleEditorChange}
+                    onMount={(editor) => { editorRef.current = editor; }}
+                    theme="vs-dark"
+                    options={{
+                      fontSize: 14,
+                      minimap: { enabled: false },
+                      scrollBeyondLastLine: false,
+                      automaticLayout: true,
+                      tabSize: 2,
+                      insertSpaces: true,
+                      wordWrap: 'on',
+                      lineNumbers: 'on',
+                      glyphMargin: false,
+                      folding: true,
+                      lineDecorationsWidth: 10,
+                      lineNumbersMinChars: 3,
+                      renderLineHighlight: 'line',
+                      mouseWheelZoom: true,
+                    }}
+                  />
                 </div>
-              )}
 
-              {activeLeftTab === 'solutions' && (
-                <div className="space-y-4">
-                  <div>
-                    <h2 className="text-xl font-bold text-white mb-2">Solutions</h2>
-                    <p className="text-sm text-slate-400">Reference solutions for this problem</p>
-                  </div>
-
-                  <div className="space-y-4">
-                    {problem.referenceSolution?.map((solution, index) => (
-                      <div key={index} className="bg-slate-800/50 rounded-lg border border-slate-700/50 overflow-hidden">
-                        <div className="bg-slate-700/50 px-4 py-3 border-b border-slate-700/50">
-                          <div className="flex items-center justify-between">
-                            <h3 className="font-semibold text-white text-sm">{problem?.title}</h3>
-                            <div className="flex items-center gap-2">
-                              <span className="px-2 py-1 rounded bg-emerald-500/10 text-emerald-400 text-xs border border-emerald-500/30">
-                                {solution?.language}
-                              </span>
-                              <span className="text-xs text-slate-400">Solution #{index + 1}</span>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="p-4">
-                          <pre className="text-emerald-400 text-xs overflow-x-auto font-mono leading-relaxed bg-slate-900 p-3 rounded border border-slate-700/50">
-<code>{solution?.completeCode}</code>
-                          </pre>
-                        </div>
-                      </div>
-                    )) || (
-                      <div className="text-center py-12 bg-slate-800/50 rounded-lg border border-slate-700/50">
-                        <div className="w-12 h-12 bg-slate-700/50 rounded-full flex items-center justify-center mx-auto mb-3">
-                          <span className="text-slate-400 text-xl">🔒</span>
-                        </div>
-                        <h3 className="text-sm font-semibold text-white mb-2">Solutions Locked</h3>
-                        <p className="text-xs text-slate-400 mb-3">
-                          Solutions will be available after you solve the problem.
-                        </p>
-                        <div className="bg-emerald-500/5 border border-emerald-500/20 p-3 rounded max-w-md mx-auto">
-                          <p className="text-xs text-emerald-400">
-                            Tip: Try solving the problem first, then compare your solution.
-                          </p>
-                        </div>
-                      </div>
-                    )}
-                  </div>
+                <div className="flex items-center justify-end gap-2 border-t border-slate-700/50 bg-slate-900/80 p-3">
+                  <button type="button" className="btn-secondary-premium inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-black" onClick={handleRun} disabled={loading}>
+                    <Play className="h-4 w-4" />
+                    {loading ? 'Running...' : 'Run'}
+                  </button>
+                  <button type="button" className="btn-primary-premium inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-black" onClick={handleSubmitCode} disabled={loading}>
+                    <Send className="h-4 w-4" />
+                    {loading ? 'Submitting...' : 'Submit'}
+                  </button>
                 </div>
-              )}
-
-              {activeLeftTab === 'submissions' && (
-                <div className="space-y-4">
-                  <div>
-                    <h2 className="text-xl font-bold text-white mb-2">My Submissions</h2>
-                    <p className="text-sm text-slate-400">Track your submission history and performance</p>
-                  </div>
-                  <div className="bg-slate-800/50 rounded-lg border border-slate-700/50 p-5">
-                    <SubmissionHistory problemId={problemId} />
-                  </div>
-                </div>
-              )}
-
-              {activeLeftTab === 'chatAI' && (
-                <div className="h-full">
-                  <ChatAI problem={problem} problemId={problemId} />
-                </div>
-              )}
-            </>
-          )}
-        </div>
-      </div>
-
-      {/* Right Panel */}
-      <div className="w-1/2 flex flex-col">
-        {/* Right Tabs */}
-        <div className="bg-slate-800/80 backdrop-blur-sm px-4 py-2 border-b border-slate-700/50">
-          <div className="flex items-center gap-1">
-            <button 
-              className={`px-3 py-2 rounded text-sm font-medium transition-all ${
-                activeRightTab === 'code' 
-                  ? 'bg-slate-700 text-white' 
-                  : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
-              }`}
-              onClick={() => setActiveRightTab('code')}
-            >
-              Code
-            </button>
-            <button 
-              className={`px-3 py-2 rounded text-sm font-medium transition-all ${
-                activeRightTab === 'testcase' 
-                  ? 'bg-slate-700 text-white' 
-                  : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
-              }`}
-              onClick={() => setActiveRightTab('testcase')}
-            >
-              Testcase
-            </button>
-            <button 
-              className={`px-3 py-2 rounded text-sm font-medium transition-all ${
-                activeRightTab === 'result' 
-                  ? 'bg-slate-700 text-white' 
-                  : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
-              }`}
-              onClick={() => setActiveRightTab('result')}
-            >
-              Result
-            </button>
+              </form>
+            )}
+            {activeRightTab === 'testcase' && <RunResults runResult={runResult} expandedTestCase={expandedTestCase} setExpandedTestCase={setExpandedTestCase} />}
+            {activeRightTab === 'result' && <SubmitResults submitResult={submitResult} />}
           </div>
-        </div>
-
-        {/* Right Content */}
-        <div className="flex-1 flex flex-col bg-slate-900">
-          {activeRightTab === 'code' && (
-            <div className="flex-1 flex flex-col">
-              {/* Language Selector */}
-              <div className="flex justify-between items-center p-3 border-b border-slate-700/50 bg-slate-800/50">
-                <div className="flex gap-2">
-                  {['javascript', 'java', 'cpp'].map((lang) => (
-                    <button
-                      key={lang}
-                      className={`px-3 py-1.5 text-xs font-medium rounded transition-all ${
-                        selectedLanguage === lang 
-                          ? 'bg-emerald-600 text-white' 
-                          : 'bg-slate-700/50 text-slate-300 hover:bg-slate-700 hover:text-white border border-slate-600'
-                      }`}
-                      onClick={() => handleLanguageChange(lang)}
-                    >
-                      {lang === 'cpp' ? 'C++' : lang === 'javascript' ? 'JavaScript' : 'Java'}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Monaco Editor */}
-              <div className="flex-1 relative">
-                <Editor
-                  height="100%"
-                  language={getLanguageForMonaco(selectedLanguage)}
-                  value={code}
-                  onChange={handleEditorChange}
-                  onMount={handleEditorDidMount}
-                  theme="vs-dark"
-                  options={{
-                    fontSize: 14,
-                    minimap: { enabled: false },
-                    scrollBeyondLastLine: false,
-                    automaticLayout: true,
-                    tabSize: 2,
-                    insertSpaces: true,
-                    wordWrap: 'on',
-                    lineNumbers: 'on',
-                    glyphMargin: false,
-                    folding: true,
-                    lineDecorationsWidth: 10,
-                    lineNumbersMinChars: 3,
-                    renderLineHighlight: 'line',
-                    selectOnLineNumbers: true,
-                    roundedSelection: false,
-                    readOnly: false,
-                    cursorStyle: 'line',
-                    mouseWheelZoom: true,
-                  }}
-                />
-              </div>
-
-              {/* Action Buttons */}
-              <div className="p-3 border-t border-slate-700/50 bg-slate-800/50 flex justify-end items-center gap-2">
-                <button
-                  className={`px-4 py-2 text-sm font-medium rounded transition-all border ${
-                    loading ? 'bg-slate-700 text-slate-400 border-slate-600' : 'bg-slate-700 text-white hover:bg-slate-600 border-slate-600'
-                  }`}
-                  onClick={handleRun}
-                  disabled={loading}
-                >
-                  {loading ? 'Running...' : 'Run Code'}
-                </button>
-                <button
-                  className={`px-4 py-2 text-sm font-medium rounded transition-all ${
-                    loading ? 'bg-emerald-800 text-emerald-300' : 'bg-emerald-600 text-white hover:bg-emerald-700'
-                  }`}
-                  onClick={handleSubmitCode}
-                  disabled={loading}
-                >
-                  {loading ? 'Submitting...' : 'Submit'}
-                </button>
-              </div>
-            </div>
-          )}
-
-          {activeRightTab === 'testcase' && (
-            <div className="flex-1 p-6 overflow-y-auto">
-              <div>
-                <h3 className="text-lg font-semibold text-white mb-4">Test Results</h3>
-                
-                {runResult ? (
-                  <div className="space-y-4">
-                    {runResult.success ? (
-                      <>
-                        {/* Success Status */}
-                        <div className="flex items-center gap-3 text-emerald-400 mb-4">
-                          <span className="text-lg">✔</span>
-                          <span className="font-medium">Accepted</span>
-                        </div>
-
-                        {/* Metrics */}
-                        <div className="grid grid-cols-2 gap-3 mb-4">
-                          <div className="bg-slate-800/50 border border-slate-700/50 rounded p-3">
-                            <div className="text-xs text-slate-400 mb-1">Runtime</div>
-                            <div className="text-sm font-medium text-white">{runResult.runtime} sec</div>
-                          </div>
-                          <div className="bg-slate-800/50 border border-slate-700/50 rounded p-3">
-                            <div className="text-xs text-slate-400 mb-1">Memory</div>
-                            <div className="text-sm font-medium text-white">{runResult.memory} KB</div>
-                          </div>
-                        </div>
-
-                        {/* Test Cases Accordions */}
-                        <div className="space-y-2">
-                          <div className="text-xs font-medium text-slate-300 mb-2">Test Cases</div>
-                          {runResult.testCases.map((tc, i) => (
-                            <div key={i} className="border border-emerald-500/30 rounded overflow-hidden">
-                              <button
-                                className="w-full flex items-center justify-between p-3 bg-emerald-500/5 hover:bg-emerald-500/10 transition-colors"
-                                onClick={() => toggleTestCase(i)}
-                              >
-                                <div className="flex items-center gap-2">
-                                  <span className="text-emerald-400 text-sm">✓</span>
-                                  <span className="text-sm text-white">Test Case {i + 1}</span>
-                                </div>
-                                <span className="text-slate-400 text-xs">
-                                  {expandedTestCase === i ? '▼' : '▶'}
-                                </span>
-                              </button>
-                              {expandedTestCase === i && (
-                                <div className="p-3 bg-slate-800/50 border-t border-emerald-500/30 space-y-2">
-                                  <div>
-                                    <div className="text-xs text-slate-400 mb-1">Input</div>
-                                    <pre className="text-xs font-mono bg-slate-900 text-slate-200 p-2 rounded border border-slate-700/50 overflow-x-auto">{tc.stdin}</pre>
-                                  </div>
-                                  <div>
-                                    <div className="text-xs text-slate-400 mb-1">Expected</div>
-                                    <pre className="text-xs font-mono bg-slate-900 text-slate-200 p-2 rounded border border-slate-700/50 overflow-x-auto">{tc.expected_output}</pre>
-                                  </div>
-                                  <div>
-                                    <div className="text-xs text-slate-400 mb-1">Output</div>
-                                    <pre className="text-xs font-mono bg-slate-900 text-slate-200 p-2 rounded border border-slate-700/50 overflow-x-auto">{tc.stdout}</pre>
-                                  </div>
-                                </div>
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                      </>
-                    ) : (
-                      <>
-                        {/* Error Status */}
-                        <div className="flex items-center gap-3 text-red-400 mb-4">
-                          <span className="text-lg">✖</span>
-                          <span className="font-medium">Wrong Answer</span>
-                        </div>
-
-                        {/* Test Cases */}
-                        <div className="space-y-2">
-                          {runResult.testCases.map((tc, i) => (
-                            <div key={i} className={`border rounded overflow-hidden ${
-                              tc.status_id == 3 ? 'border-emerald-500/30' : 'border-red-500/30'
-                            }`}>
-                              <button
-                                className={`w-full flex items-center justify-between p-3 transition-colors ${
-                                  tc.status_id == 3 ? 'bg-emerald-500/5 hover:bg-emerald-500/10' : 'bg-red-500/5 hover:bg-red-500/10'
-                                }`}
-                                onClick={() => toggleTestCase(i)}
-                              >
-                                <div className="flex items-center gap-2">
-                                  <span className={`text-sm ${tc.status_id == 3 ? 'text-emerald-400' : 'text-red-400'}`}>
-                                    {tc.status_id == 3 ? '✓' : '✗'}
-                                  </span>
-                                  <span className="text-sm text-white">Test Case {i + 1}</span>
-                                  <span className={`text-xs ${tc.status_id == 3 ? 'text-emerald-400' : 'text-red-400'}`}>
-                                    {tc.status_id == 3 ? 'Passed' : 'Failed'}
-                                  </span>
-                                </div>
-                                <span className="text-slate-400 text-xs">
-                                  {expandedTestCase === i ? '▼' : '▶'}
-                                </span>
-                              </button>
-                              {expandedTestCase === i && (
-                                <div className={`p-3 border-t space-y-2 ${
-                                  tc.status_id == 3 ? 'bg-emerald-500/5 border-emerald-500/30' : 'bg-red-500/5 border-red-500/30'
-                                }`}>
-                                  <div>
-                                    <div className="text-xs text-slate-400 mb-1">Input</div>
-                                    <pre className="text-xs font-mono bg-slate-900 text-slate-200 p-2 rounded border border-slate-700/50 overflow-x-auto">{tc.stdin}</pre>
-                                  </div>
-                                  <div>
-                                    <div className="text-xs text-slate-400 mb-1">Expected</div>
-                                    <pre className="text-xs font-mono bg-slate-900 text-slate-200 p-2 rounded border border-slate-700/50 overflow-x-auto">{tc.expected_output}</pre>
-                                  </div>
-                                  <div>
-                                    <div className="text-xs text-slate-400 mb-1">Output</div>
-                                    <pre className="text-xs font-mono bg-slate-900 text-slate-200 p-2 rounded border border-slate-700/50 overflow-x-auto">{tc.stdout}</pre>
-                                  </div>
-                                </div>
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                      </>
-                    )}
-                  </div>
-                ) : (
-                  <div className="text-center py-12 bg-slate-800/30 rounded-lg border border-slate-700/50">
-                    <div className="text-slate-400 mb-2">No results yet</div>
-                    <p className="text-xs text-slate-500">
-                      Click "Run Code" to test your solution
-                    </p>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {activeRightTab === 'result' && (
-            <div className="flex-1 p-6 overflow-y-auto">
-              <div>
-                <h3 className="text-lg font-semibold text-white mb-4">Submission Result</h3>
-                
-                {submitResult ? (
-                  <div className="space-y-4">
-                    {submitResult.accepted ? (
-                      <>
-                        {/* Success Status */}
-                        <div className="flex items-center gap-3 text-emerald-400 mb-4">
-                          <span className="text-lg">✔</span>
-                          <span className="font-medium">Accepted</span>
-                        </div>
-
-                        {/* Metrics Grid */}
-                        <div className="grid grid-cols-3 gap-3">
-                          <div className="bg-slate-800/50 border border-slate-700/50 rounded p-3">
-                            <div className="text-xs text-slate-400 mb-1">Test Cases</div>
-                            <div className="text-lg font-semibold text-emerald-400">
-                              {submitResult.passedTestCases}/{submitResult.totalTestCases}
-                            </div>
-                            <div className="text-xs text-slate-500">Passed</div>
-                          </div>
-                          <div className="bg-slate-800/50 border border-slate-700/50 rounded p-3">
-                            <div className="text-xs text-slate-400 mb-1">Runtime</div>
-                            <div className="text-lg font-semibold text-white">{submitResult.runtime}</div>
-                            <div className="text-xs text-slate-500">seconds</div>
-                          </div>
-                          <div className="bg-slate-800/50 border border-slate-700/50 rounded p-3">
-                            <div className="text-xs text-slate-400 mb-1">Memory</div>
-                            <div className="text-lg font-semibold text-white">{submitResult.memory}</div>
-                            <div className="text-xs text-slate-500">KB</div>
-                          </div>
-                        </div>
-
-                        {/* Success Message */}
-                        <div className="bg-emerald-500/10 border border-emerald-500/30 rounded p-4">
-                          <p className="text-sm text-emerald-300">
-                            Congratulations! Your solution has been accepted.
-                          </p>
-                        </div>
-                      </>
-                    ) : (
-                      <>
-                        {/* Error Status */}
-                        <div className="flex items-center gap-3 text-red-400 mb-4">
-                          <span className="text-lg">✖</span>
-                          <span className="font-medium">{submitResult.error}</span>
-                        </div>
-
-                        {/* Test Results */}
-                        <div className="bg-slate-800/50 border border-slate-700/50 rounded p-4">
-                          <div className="text-xs text-slate-400 mb-1">Test Cases</div>
-                          <div className="text-lg font-semibold text-white mb-2">
-                            {submitResult.passedTestCases}/{submitResult.totalTestCases}
-                          </div>
-                          <div className="text-xs text-slate-400">
-                            {submitResult.passedTestCases} test case(s) passed
-                          </div>
-                        </div>
-
-                        {/* Tip */}
-                        <div className="bg-yellow-500/10 border border-yellow-500/30 rounded p-4">
-                          <p className="text-sm text-yellow-300">
-                            Review your logic and try again. Consider edge cases and algorithm efficiency.
-                          </p>
-                        </div>
-                      </>
-                    )}
-                  </div>
-                ) : (
-                  <div className="text-center py-12 bg-slate-800/30 rounded-lg border border-slate-700/50">
-                    <div className="text-slate-400 mb-2">No submission yet</div>
-                    <p className="text-xs text-slate-500">
-                      Click "Submit" to evaluate your solution
-                    </p>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-        </div>
+        </section>
       </div>
-    </div>
+    </main>
   );
 };
 
+const TabBar = ({ tabs, active, setActive }) => (
+  <div className="border-b border-slate-700/50 bg-slate-900/90 px-3 py-2">
+    <div className="flex gap-1 overflow-x-auto">
+      {tabs.map(([id, Icon, label]) => (
+        <button key={id} className={`inline-flex shrink-0 items-center gap-2 rounded-lg px-3 py-2 text-sm font-black transition ${active === id ? 'bg-slate-700 text-white' : 'text-slate-400 hover:bg-slate-800 hover:text-white'}`} onClick={() => setActive(id)}>
+          <Icon className="h-4 w-4" />
+          {label}
+        </button>
+      ))}
+    </div>
+  </div>
+);
+
+const Description = ({ problem }) => (
+  <div className="space-y-6">
+    <div>
+      <h1 className="text-3xl font-black text-white">{problem.title}</h1>
+      <div className="mt-4 flex flex-wrap gap-2">
+        <span className={`rounded-md border px-3 py-1.5 text-xs font-black ${getDifficultyColor(problem.difficulty)}`}>{capitalize(problem.difficulty)}</span>
+        <span className="rounded-md border border-cyan-400/20 bg-cyan-400/10 px-3 py-1.5 text-xs font-black text-cyan-200">{formatTag(problem.tags)}</span>
+      </div>
+    </div>
+    <section className="premium-card p-5">
+      <h2 className="mb-3 text-sm font-black uppercase text-slate-500">Problem Description</h2>
+      <div className="whitespace-pre-wrap text-sm leading-7 text-slate-300">{problem.description}</div>
+    </section>
+    <section className="space-y-4">
+      <h3 className="text-sm font-black uppercase text-slate-500">Examples</h3>
+      {problem.visibleTestCases?.map((example, index) => (
+        <div key={index} className="premium-card p-4">
+          <div className="mb-3 text-sm font-black text-emerald-300">Example {index + 1}</div>
+          <CodeBlock label="Input" value={example.input} />
+          <CodeBlock label="Output" value={example.output} />
+          {example.explanation && <p className="mt-3 text-sm leading-6 text-slate-400">{example.explanation}</p>}
+        </div>
+      ))}
+    </section>
+  </div>
+);
+
+const Solutions = ({ problem }) => (
+  <PanelTitle title="Solutions" subtitle="Reference solutions for this problem">
+    <div className="space-y-4">
+      {problem.referenceSolution?.length ? problem.referenceSolution.map((solution, index) => (
+        <div key={index} className="premium-card overflow-hidden">
+          <div className="flex items-center justify-between border-b border-slate-700/50 bg-slate-900/70 px-4 py-3">
+            <h3 className="text-sm font-black text-white">{problem.title}</h3>
+            <span className="rounded-md border border-emerald-400/20 bg-emerald-400/10 px-2.5 py-1 text-xs font-black text-emerald-300">{solution?.language}</span>
+          </div>
+          <pre className="overflow-x-auto bg-[#060a12] p-4 text-xs leading-6 text-emerald-300"><code>{solution?.completeCode}</code></pre>
+        </div>
+      )) : (
+        <div className="premium-card p-8 text-center">
+          <h3 className="text-lg font-black text-white">Solutions Locked</h3>
+          <p className="mt-2 text-sm text-slate-400">Try solving the problem first, then compare your approach.</p>
+        </div>
+      )}
+    </div>
+  </PanelTitle>
+);
+
+const RunResults = ({ runResult, expandedTestCase, setExpandedTestCase }) => (
+  <div className="h-full overflow-y-auto p-6">
+    <h3 className="mb-4 text-xl font-black text-white">Test Results</h3>
+    {!runResult ? <EmptyState title="No results yet" description="Run your code to test the visible cases." /> : (
+      <div className="space-y-4">
+        <StatusLine ok={runResult.success} label={runResult.success ? 'Accepted' : 'Wrong Answer'} />
+        {runResult.success && (
+          <div className="grid grid-cols-2 gap-3">
+            <Metric label="Runtime" value={`${runResult.runtime} sec`} />
+            <Metric label="Memory" value={`${runResult.memory} KB`} />
+          </div>
+        )}
+        <div className="space-y-2">
+          {runResult.testCases?.map((tc, i) => {
+            const passed = runResult.success || tc.status_id == 3;
+            return (
+              <div key={i} className={`overflow-hidden rounded-lg border ${passed ? 'border-emerald-400/25' : 'border-red-400/25'}`}>
+                <button className={`flex w-full items-center justify-between p-3 text-left ${passed ? 'bg-emerald-400/10' : 'bg-red-400/10'}`} onClick={() => setExpandedTestCase(expandedTestCase === i ? null : i)}>
+                  <span className="flex items-center gap-2 text-sm font-black text-white">
+                    {passed ? <CheckCircle className="h-4 w-4 text-emerald-300" /> : <XCircle className="h-4 w-4 text-red-300" />}
+                    Test Case {i + 1}
+                  </span>
+                  {expandedTestCase === i ? <ChevronDown className="h-4 w-4 text-slate-400" /> : <ChevronRight className="h-4 w-4 text-slate-400" />}
+                </button>
+                {expandedTestCase === i && (
+                  <div className="space-y-3 bg-slate-950 p-3">
+                    <CodeBlock label="Input" value={tc.stdin} />
+                    <CodeBlock label="Expected" value={tc.expected_output} />
+                    <CodeBlock label="Output" value={tc.stdout} />
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    )}
+  </div>
+);
+
+const SubmitResults = ({ submitResult }) => (
+  <div className="h-full overflow-y-auto p-6">
+    <h3 className="mb-4 text-xl font-black text-white">Submission Result</h3>
+    {!submitResult ? <EmptyState title="No submission yet" description="Submit your solution to evaluate all test cases." /> : (
+      <div className="space-y-4">
+        <StatusLine ok={submitResult.accepted} label={submitResult.accepted ? 'Accepted' : submitResult.error || 'Submission failed'} />
+        <div className="grid gap-3 sm:grid-cols-3">
+          <Metric label="Test Cases" value={`${submitResult.passedTestCases || 0}/${submitResult.totalTestCases || 0}`} />
+          <Metric label="Runtime" value={submitResult.runtime || '-'} />
+          <Metric label="Memory" value={submitResult.memory || '-'} />
+        </div>
+        <div className={`rounded-lg border p-4 text-sm ${submitResult.accepted ? 'border-emerald-400/25 bg-emerald-400/10 text-emerald-200' : 'border-amber-400/25 bg-amber-400/10 text-amber-200'}`}>
+          {submitResult.accepted ? 'Congratulations. Your solution passed all tests.' : 'Review the failing case and check edge cases before trying again.'}
+        </div>
+      </div>
+    )}
+  </div>
+);
+
+const PanelTitle = ({ title, subtitle, children }) => (
+  <div className="space-y-4">
+    <div>
+      <h2 className="text-2xl font-black text-white">{title}</h2>
+      <p className="mt-1 text-sm text-slate-400">{subtitle}</p>
+    </div>
+    <div className="premium-card p-5">{children}</div>
+  </div>
+);
+
+const CodeBlock = ({ label, value }) => (
+  <div className="mt-3">
+    <div className="mb-1 text-xs font-black uppercase text-slate-500">{label}</div>
+    <pre className="overflow-x-auto rounded-lg border border-slate-700/50 bg-[#060a12] p-3 text-xs leading-6 text-slate-200"><code>{value}</code></pre>
+  </div>
+);
+
+const EmptyState = ({ title, description }) => (
+  <div className="premium-card p-10 text-center">
+    <h4 className="text-lg font-black text-white">{title}</h4>
+    <p className="mt-2 text-sm text-slate-400">{description}</p>
+  </div>
+);
+
+const Metric = ({ label, value }) => (
+  <div className="premium-card p-4">
+    <div className="text-xs font-black uppercase text-slate-500">{label}</div>
+    <div className="mt-1 text-lg font-black text-white">{value}</div>
+  </div>
+);
+
+const StatusLine = ({ ok, label }) => (
+  <div className={`inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-sm font-black ${ok ? 'border-emerald-400/25 bg-emerald-400/10 text-emerald-300' : 'border-red-400/25 bg-red-400/10 text-red-300'}`}>
+    {ok ? <CheckCircle className="h-4 w-4" /> : <XCircle className="h-4 w-4" />}
+    {label}
+  </div>
+);
+
+const capitalize = (value = '') => value.charAt(0).toUpperCase() + value.slice(1);
+const formatTag = (tag = '') => tag === 'linkedList' ? 'Linked List' : tag === 'dp' ? 'DP' : capitalize(tag);
+
+const getDifficultyColor = (difficulty = '') => {
+  switch (difficulty.toLowerCase()) {
+    case 'easy': return 'border-emerald-400/30 bg-emerald-400/10 text-emerald-300';
+    case 'medium': return 'border-amber-400/30 bg-amber-400/10 text-amber-300';
+    case 'hard': return 'border-red-400/30 bg-red-400/10 text-red-300';
+    default: return 'border-slate-600 bg-slate-800 text-slate-300';
+  }
+};
+
 export default ProblemPage;
-
-

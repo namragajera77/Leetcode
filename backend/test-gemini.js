@@ -1,38 +1,27 @@
 require('dotenv').config();
-const { GoogleGenerativeAI } = require("@google/generative-ai");
+const axios = require('axios');
 
-async function listModels() {
+async function testOllama() {
     try {
-        const genAI = new GoogleGenerativeAI(process.env.GEMINI_KEY);
-        
-        console.log('Testing API Key:', process.env.GEMINI_KEY ? 'Present' : 'Missing');
-        
-        // Try different model names
-        const modelNames = [
-            'gemini-pro',
-            'gemini-1.5-flash',
-            'gemini-1.5-pro',
-            'gemini-1.0-pro',
-            'models/gemini-pro'
-        ];
+        const endpoint = process.env.OLLAMA_API_URL || 'http://localhost:11434/api/chat';
+        const model = process.env.OLLAMA_MODEL || 'gemma3:4b';
 
-        for (const modelName of modelNames) {
-            try {
-                console.log(`\nTrying model: ${modelName}`);
-                const model = genAI.getGenerativeModel({ model: modelName });
-                const result = await model.generateContent("Say hello");
-                const response = await result.response;
-                console.log(`✅ SUCCESS with ${modelName}`);
-                console.log('Response:', response.text().substring(0, 50));
-                break; // Stop on first success
-            } catch (err) {
-                console.log(`❌ FAILED: ${err.message.substring(0, 100)}`);
-            }
-        }
-        
+        console.log('Testing Ollama endpoint:', endpoint);
+        console.log('Testing model:', model);
+
+        const response = await axios.post(endpoint, {
+            model,
+            messages: [
+                { role: 'system', content: 'You are a helpful assistant.' },
+                { role: 'user', content: 'Say hello in one short sentence.' }
+            ],
+            stream: false
+        });
+
+        console.log('✅ Ollama response:', response.data?.message?.content || 'No content returned');
     } catch (error) {
-        console.error('Error:', error.message);
+        console.error('❌ Ollama test failed:', error.response?.data || error.message);
     }
 }
 
-listModels();
+testOllama();

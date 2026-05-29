@@ -1,25 +1,14 @@
 import { useState } from 'react';
 import { Link } from 'react-router';
-import { Code2, Mail, Github, Linkedin, Send, MapPin, MessageSquare } from 'lucide-react';
+import { ArrowLeft, Code2, Github, Linkedin, Mail, MessageSquare, Send } from 'lucide-react';
 
 const Contact = () => {
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    message: ''
-  });
+  const [formData, setFormData] = useState({ name: '', email: '', message: '' });
   const [submitted, setSubmitted] = useState(false);
 
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
-  };
-
+  const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Here you would typically send the data to your backend
     console.log('Form submitted:', formData);
     setSubmitted(true);
     setTimeout(() => {
@@ -29,208 +18,84 @@ const Contact = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
-      {/* Header */}
-      <nav className="bg-white/5 backdrop-blur-xl border-b border-white/10">
-        <div className="max-w-7xl mx-auto px-6 lg:px-8 py-4 flex justify-between items-center">
-          <Link to="/" className="flex items-center gap-2">
-            <Code2 className="h-8 w-8 text-purple-400" />
-            <span className="text-2xl font-bold text-white">NG AlgoVista</span>
+    <main className="app-shell min-h-screen">
+      <nav className="border-b border-slate-700/40 bg-slate-950/70 backdrop-blur-2xl">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 lg:px-8">
+          <Link to="/" className="flex items-center gap-3">
+            <span className="flex h-10 w-10 items-center justify-center rounded-lg accent-gradient text-slate-950">
+              <Code2 className="h-6 w-6" />
+            </span>
+            <span className="text-lg font-black text-white">NG AlgoVista</span>
           </Link>
-          <Link to="/" className="text-purple-300 hover:text-white transition-colors">
-            ← Back to Home
+          <Link to="/" className="btn-secondary-premium inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-bold">
+            <ArrowLeft className="h-4 w-4" />
+            Home
           </Link>
         </div>
       </nav>
 
-      {/* Hero Section */}
-      <section className="px-6 lg:px-8 py-16 lg:py-20 text-center">
-        <div className="max-w-4xl mx-auto">
-          <div className="mb-6 inline-flex items-center gap-2 px-4 py-2 bg-purple-500/20 backdrop-blur-md rounded-full border border-purple-400/30">
-            <MessageSquare className="h-4 w-4 text-purple-300" />
-            <span className="text-purple-200 text-sm font-medium">Get in Touch</span>
+      <section className="mx-auto max-w-7xl px-5 py-14 lg:px-8 lg:py-20">
+        <div className="max-w-3xl">
+          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-cyan-400/20 bg-cyan-400/10 px-3 py-1.5 text-sm font-bold text-cyan-200">
+            <MessageSquare className="h-4 w-4" />
+            Get in touch
           </div>
-          <h1 className="text-4xl lg:text-6xl font-black text-white mb-6">
-            Let's
-            <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent"> Connect</span>
-          </h1>
-          <p className="text-lg lg:text-xl text-purple-100/80 leading-relaxed">
-            Have questions about NG AlgoVista? Want to collaborate or provide feedback? 
-            I'd love to hear from you.
-          </p>
+          <h1 className="text-5xl font-black leading-tight text-white lg:text-7xl">Let's connect.</h1>
+          <p className="mt-6 text-lg leading-8 text-slate-300">Questions, feedback, collaborations, or bug reports are welcome.</p>
         </div>
-      </section>
 
-      {/* Main Content */}
-      <section className="px-6 lg:px-8 py-12 lg:py-16 max-w-7xl mx-auto">
-        <div className="grid lg:grid-cols-5 gap-8 lg:gap-12">
-          
-          {/* Contact Info - Left Side */}
-          <div className="lg:col-span-2 space-y-6">
-            
-            {/* Social Links */}
-            <div className="bg-white/5 backdrop-blur-xl rounded-3xl p-8 border border-white/10 shadow-2xl">
-              <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-2">
-                <Mail className="h-6 w-6 text-purple-400" />
-                Contact Information
-              </h2>
-              
-              <div className="space-y-4">
-                <a 
-                  href="https://github.com/namragajera" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-4 p-4 bg-white/5 rounded-xl border border-white/10 hover:border-purple-400/50 hover:bg-white/10 transition-all duration-300 group"
-                >
-                  <div className="w-12 h-12 bg-gradient-to-br from-gray-700 to-gray-900 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
-                    <Github className="h-6 w-6 text-white" />
-                  </div>
-                  <div>
-                    <p className="text-white font-semibold">GitHub</p>
-                    <p className="text-purple-300 text-sm">@namragajera</p>
-                  </div>
-                </a>
+        <div className="mt-12 grid gap-6 lg:grid-cols-[0.8fr_1.2fr]">
+          <aside className="space-y-4">
+            <ContactLink icon={Github} label="GitHub" value="@namragajera" href="https://github.com/namragajera" />
+            <ContactLink icon={Linkedin} label="LinkedIn" value="Namra Gajera" href="https://linkedin.com/in/namragajera" />
+            <ContactLink icon={Mail} label="Email" value="namra.gajera@example.com" href="mailto:namra.gajera@example.com" />
+          </aside>
 
-                <a 
-                  href="https://linkedin.com/in/namragajera" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-4 p-4 bg-white/5 rounded-xl border border-white/10 hover:border-blue-400/50 hover:bg-white/10 transition-all duration-300 group"
-                >
-                  <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-blue-800 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
-                    <Linkedin className="h-6 w-6 text-white" />
-                  </div>
-                  <div>
-                    <p className="text-white font-semibold">LinkedIn</p>
-                    <p className="text-purple-300 text-sm">Namra Gajera</p>
-                  </div>
-                </a>
-
-                <a 
-                  href="mailto:namra.gajera@example.com" 
-                  className="flex items-center gap-4 p-4 bg-white/5 rounded-xl border border-white/10 hover:border-pink-400/50 hover:bg-white/10 transition-all duration-300 group"
-                >
-                  <div className="w-12 h-12 bg-gradient-to-br from-pink-600 to-purple-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
-                    <Mail className="h-6 w-6 text-white" />
-                  </div>
-                  <div>
-                    <p className="text-white font-semibold">Email</p>
-                    <p className="text-purple-300 text-sm">namra.gajera@example.com</p>
-                  </div>
-                </a>
+          <div className="surface-strong rounded-lg p-6 lg:p-8">
+            {submitted ? (
+              <div className="rounded-lg border border-emerald-400/25 bg-emerald-400/10 p-8 text-center">
+                <Send className="mx-auto h-10 w-10 text-emerald-300" />
+                <h2 className="mt-4 text-2xl font-black text-white">Message sent</h2>
+                <p className="mt-2 text-emerald-100">Thank you for reaching out. I will get back to you soon.</p>
               </div>
-            </div>
-
-            {/* Quick Info */}
-            <div className="bg-gradient-to-br from-purple-900/50 to-pink-900/50 backdrop-blur-xl rounded-3xl p-8 border border-purple-400/30 shadow-2xl">
-              <h3 className="text-xl font-bold text-white mb-4">Why Reach Out?</h3>
-              <ul className="space-y-3 text-purple-100/80">
-                <li className="flex items-start gap-2">
-                  <div className="w-1.5 h-1.5 bg-purple-400 rounded-full mt-2"></div>
-                  <span>Bug reports or technical issues</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <div className="w-1.5 h-1.5 bg-purple-400 rounded-full mt-2"></div>
-                  <span>Feature suggestions</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <div className="w-1.5 h-1.5 bg-purple-400 rounded-full mt-2"></div>
-                  <span>Collaboration opportunities</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <div className="w-1.5 h-1.5 bg-purple-400 rounded-full mt-2"></div>
-                  <span>General feedback or questions</span>
-                </li>
-              </ul>
-            </div>
-          </div>
-
-          {/* Contact Form - Right Side */}
-          <div className="lg:col-span-3">
-            <div className="bg-white/5 backdrop-blur-xl rounded-3xl p-8 lg:p-10 border border-white/10 shadow-2xl">
-              <h2 className="text-2xl lg:text-3xl font-bold text-white mb-6 flex items-center gap-2">
-                <Send className="h-7 w-7 text-pink-400" />
-                Send a Message
-              </h2>
-              
-              {submitted ? (
-                <div className="bg-green-500/20 border border-green-400/50 rounded-2xl p-8 text-center">
-                  <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Send className="h-8 w-8 text-white" />
-                  </div>
-                  <h3 className="text-2xl font-bold text-white mb-2">Message Sent!</h3>
-                  <p className="text-green-100">Thank you for reaching out. I'll get back to you soon.</p>
+            ) : (
+              <form onSubmit={handleSubmit} className="space-y-5">
+                <Field label="Your Name" name="name" value={formData.name} onChange={handleChange} placeholder="John Doe" />
+                <Field label="Your Email" name="email" type="email" value={formData.email} onChange={handleChange} placeholder="john@example.com" />
+                <div>
+                  <label className="mb-2 block text-sm font-bold text-slate-200">Your Message</label>
+                  <textarea name="message" value={formData.message} onChange={handleChange} required rows="6" placeholder="Tell me what's on your mind..." className="field-premium w-full resize-none px-4 py-3" />
                 </div>
-              ) : (
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  <div>
-                    <label className="block text-white font-semibold mb-2" htmlFor="name">
-                      Your Name
-                    </label>
-                    <input
-                      type="text"
-                      id="name"
-                      name="name"
-                      value={formData.name}
-                      onChange={handleChange}
-                      required
-                      placeholder="John Doe"
-                      className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-purple-300/50 focus:outline-none focus:border-purple-400 focus:bg-white/15 transition-all duration-300"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-white font-semibold mb-2" htmlFor="email">
-                      Your Email
-                    </label>
-                    <input
-                      type="email"
-                      id="email"
-                      name="email"
-                      value={formData.email}
-                      onChange={handleChange}
-                      required
-                      placeholder="john@example.com"
-                      className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-purple-300/50 focus:outline-none focus:border-purple-400 focus:bg-white/15 transition-all duration-300"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-white font-semibold mb-2" htmlFor="message">
-                      Your Message
-                    </label>
-                    <textarea
-                      id="message"
-                      name="message"
-                      value={formData.message}
-                      onChange={handleChange}
-                      required
-                      rows="6"
-                      placeholder="Tell me what's on your mind..."
-                      className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-purple-300/50 focus:outline-none focus:border-purple-400 focus:bg-white/15 transition-all duration-300 resize-none"
-                    ></textarea>
-                  </div>
-
-                  <button
-                    type="submit"
-                    className="w-full px-8 py-4 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold text-lg shadow-2xl hover:shadow-purple-500/50 transition-all duration-300 flex items-center justify-center gap-2 group"
-                  >
-                    <Send className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
-                    Send Message
-                  </button>
-                </form>
-              )}
-            </div>
+                <button type="submit" className="btn-primary-premium inline-flex w-full items-center justify-center gap-2 rounded-lg px-6 py-3.5 text-lg font-black">
+                  <Send className="h-5 w-5" />
+                  Send Message
+                </button>
+              </form>
+            )}
           </div>
         </div>
       </section>
-
-      {/* Footer */}
-      <footer className="border-t border-white/10 bg-white/5 backdrop-blur-md py-8 text-center text-purple-300 text-sm mt-12">
-        <p>© 2026 NG AlgoVista. Built by Namra Gajera.</p>
-      </footer>
-    </div>
+    </main>
   );
 };
+
+const Field = ({ label, ...props }) => (
+  <div>
+    <label className="mb-2 block text-sm font-bold text-slate-200">{label}</label>
+    <input {...props} required className="field-premium w-full px-4 py-3" />
+  </div>
+);
+
+const ContactLink = ({ icon: Icon, label, value, href }) => (
+  <a href={href} target={href.startsWith('http') ? '_blank' : undefined} rel={href.startsWith('http') ? 'noopener noreferrer' : undefined} className="premium-card flex items-center gap-4 p-5">
+    <span className="flex h-12 w-12 items-center justify-center rounded-lg bg-slate-900 text-cyan-300 ring-1 ring-cyan-400/20">
+      <Icon className="h-6 w-6" />
+    </span>
+    <span>
+      <span className="block font-black text-white">{label}</span>
+      <span className="text-sm font-semibold text-slate-400">{value}</span>
+    </span>
+  </a>
+);
 
 export default Contact;

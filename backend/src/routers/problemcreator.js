@@ -25,6 +25,7 @@ problemRouter.delete("/delete/:id",adminmiddleware,deleteproblem);
 problemRouter.get("/problemSolvedByUser", usermiddleware,solvedallProblembyuser);
 problemRouter.get("/problemById/:id",usermiddleware,getproblembyid);
 problemRouter.get("/getAllProblem", usermiddleware,getAllProblem);
+problemRouter.get("/getAllProblemWithVideos", usermiddleware,getAllProblemWithVideos);
 
 problemRouter.get("/testProblems", getAllProblem); // Test endpoint without admin middleware
 problemRouter.get("/submittedProblem/:pid",usermiddleware,submittedproblem)

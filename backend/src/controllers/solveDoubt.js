@@ -1,9 +1,12 @@
-const Groq = require('groq-sdk');
+const axios = require('axios');
 
 const solveDoubt = async(req, res) => {
     try {
-        // Check if GROQ_API_KEY is configured
-        if (!process.env.GROQ_API_KEY) {
+        const ollamaEndpoint = process.env.OLLAMA_API_URL || 'http://localhost:11434/api/chat';
+        const ollamaModel = process.env.OLLAMA_MODEL || 'gemma3:4b';
+
+        // Check if Ollama is configured
+        if (!ollamaEndpoint || !ollamaModel) {
             return res.status(500).json({
                 message: "AI service is not configured. Please contact administrator."
             });
@@ -17,14 +20,6 @@ const solveDoubt = async(req, res) => {
                 message: "Missing required fields: messages, title, or description"
             });
         }
-
-        const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
-
-        // Prepare the conversation history
-        const conversationHistory = messages.map(msg => ({
-            role: msg.role === 'user' ? 'user' : 'model',
-            parts: msg.parts
-        }));
 
         // Create system prompt
         const systemPrompt = `You are an expert Data Structures and Algorithms (DSA) tutor specializing in helping users solve coding problems. Your role is strictly limited to DSA-related assistance only.
@@ -71,12 +66,20 @@ const solveDoubt = async(req, res) => {
 - Provide complexity analysis for each
 
 ## RESPONSE FORMAT:
-- Use clear, concise explanations
-- Format code with proper syntax highlighting
-- Use examples to illustrate concepts
-- Break complex explanations into digestible parts
+- Use clean Markdown formatting so the reply reads like ChatGPT
+- Start with a short direct answer
+- Use headings like **Approach**, **Explanation**, **Steps**, and **Complexity** when useful
+- Use bullet points for lists and numbered steps for algorithms
+- Wrap code in triple backticks with the correct language tag
+- Keep the tone helpful, structured, and concise
 - Always relate back to the current problem context
 - Always respond in the language in which user is comfortable or given the context
+
+## OUTPUT STYLE:
+- If the user asks a question, answer in a polished assistant style with a short intro and a useful breakdown
+- If the user asks for code, explain the idea first, then show the code, then mention complexity
+- If the answer has multiple parts, separate them with clear markdown headings
+- Avoid one-line raw text replies unless the answer is very short
 
 ## STRICT LIMITATIONS:
 - ONLY discuss topics related to the current DSA problem
@@ -93,8 +96,8 @@ const solveDoubt = async(req, res) => {
 
 Remember: Your goal is to help users learn and understand DSA concepts through the lens of the current problem, not just to provide quick answers.`;
 
-        // Prepare messages for Groq
-        const groqMessages = [
+        // Prepare messages for Ollama
+        const ollamaMessages = [
             {
                 role: "system",
                 content: systemPrompt
@@ -105,15 +108,24 @@ Remember: Your goal is to help users learn and understand DSA concepts through t
             }))
         ];
 
-        // Call Groq API
-        const chatCompletion = await groq.chat.completions.create({
-            messages: groqMessages,
-            model: "llama-3.3-70b-versatile", // Fast and capable model
-            temperature: 0.7,
-            max_tokens: 2048,
-        });
+        // Call Ollama local chat API
+        const chatResponse = await axios.post(
+            ollamaEndpoint,
+            {
+                model: ollamaModel,
+                messages: ollamaMessages,
+                stream: false,
+                options: {
+                    temperature: 0.7,
+                    num_predict: 2048
+                }
+            },
+            {
+                timeout: 120000
+            }
+        );
 
-        const responseText = chatCompletion.choices[0]?.message?.content || "I couldn't generate a response.";
+        const responseText = chatResponse.data?.message?.content || "I couldn't generate a response.";
 
         res.status(200).json({
             message: responseText
@@ -128,13 +140,27 @@ Remember: Your goal is to help users learn and understand DSA concepts through t
         });
         
         // Provide more specific error messages
-        if (error.message.includes("API_KEY") || error.message.includes("API key")) {
+        if (error.code === 'ECONNREFUSED' || error.message.includes('ECONNREFUSED')) {
             return res.status(500).json({
-                message: "AI service configuration error. Please contact administrator.",
+                message: "Local AI service is not running. Please start Ollama and try again.",
                 error: process.env.NODE_ENV === 'development' ? error.message : undefined
             });
         }
         
+        if (error.response?.status === 404) {
+            return res.status(500).json({
+                message: `Ollama model \"${process.env.OLLAMA_MODEL || 'gemma3:4b'}\" was not found. Please pull the model and try again.`,
+                error: process.env.NODE_ENV === 'development' ? error.message : undefined
+            });
+        }
+
+        if (error.response?.data?.error) {
+            return res.status(500).json({
+                message: error.response.data.error,
+                error: process.env.NODE_ENV === 'development' ? error.message : undefined
+            });
+        }
+
         if (error.message.includes("quota") || error.message.includes("rate limit")) {
             return res.status(429).json({
                 message: "AI service is temporarily unavailable due to high usage. Please try again later."
