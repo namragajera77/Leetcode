@@ -3,7 +3,7 @@ import { NavLink } from 'react-router';
 import { useDispatch, useSelector } from 'react-redux';
 import axiosClient from '../utils/axiosClient';
 import { logoutUser } from '../authSlice';
-import { ArrowRight, BarChart3, CheckCircle, Circle, Code2, Eye, Filter, LogOut, Search, Sparkles, User, Zap } from 'lucide-react';
+import { ArrowRight, BarChart3, CheckCircle, Circle, Code2, Eye, FileText, Filter, LogOut, Search, Sparkles, User, Zap } from 'lucide-react';
 
 function Homepage() {
   const dispatch = useDispatch();
@@ -72,8 +72,8 @@ function Homepage() {
               <Code2 className="h-6 w-6" />
             </span>
             <span>
-              <span className="block text-lg font-black text-white">NG AlgoVista</span>
-              <span className="block text-xs font-semibold text-slate-400">Problem workspace</span>
+              <span className="block text-lg font-black text-white">AI-Based Coding Interview Preparation Platform</span>
+              <span className="block text-xs font-semibold text-slate-400">Interview Prep Workspace</span>
             </span>
           </NavLink>
 
@@ -92,6 +92,12 @@ function Homepage() {
                 <NavLink to="/profile" className="rounded-md text-slate-200 hover:bg-slate-800">
                   <User className="h-5 w-5 text-cyan-300" />
                   Profile
+                </NavLink>
+              </li>
+              <li>
+                <NavLink to="/ai-knowledge-base" className="rounded-md text-slate-200 hover:bg-slate-800">
+                  <FileText className="h-5 w-5 text-amber-300" />
+                  AI Knowledge Base
                 </NavLink>
               </li>
               <li>
@@ -127,10 +133,10 @@ function Homepage() {
               Welcome back, {user?.firstname || 'coder'}
             </div>
             <h1 className="max-w-3xl text-4xl font-black leading-tight text-white lg:text-6xl">
-              Choose the next problem. Keep the streak alive.
+              Track progress and prepare confidently for interviews.
             </h1>
             <p className="mt-4 max-w-2xl text-base leading-7 text-slate-400">
-              Filter by difficulty, topic, and status. Your dashboard stays focused on practice instead of noise.
+              Track progress, improve problem-solving skills, and prepare confidently for coding interviews.
             </p>
             <div className="mt-7 flex flex-col gap-3 sm:flex-row">
               <button onClick={() => document.getElementById('problem-list')?.scrollIntoView({ behavior: 'smooth' })} className="btn-primary-premium inline-flex items-center justify-center gap-2 rounded-lg px-5 py-3 font-black">

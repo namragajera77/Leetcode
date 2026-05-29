@@ -7,6 +7,8 @@ import axiosClient from '../utils/axiosClient';
 import SubmissionHistory from '../components/SubmissionHistory';
 import ChatAI from '../components/ChatAI';
 import Editorial from '../components/Editorial';
+import HintModal from '../components/HintModal';
+import AIReviewModal from '../components/AIReviewModal';
 
 const langMap = { cpp: 'cpp', java: 'java', javascript: 'javascript' };
 
@@ -34,6 +36,17 @@ const ProblemPage = () => {
   const [activeLeftTab, setActiveLeftTab] = useState('description');
   const [activeRightTab, setActiveRightTab] = useState('code');
   const [expandedTestCase, setExpandedTestCase] = useState(null);
+  const [hintModalOpen, setHintModalOpen] = useState(false);
+  const [hintLevel, setHintLevel] = useState(1);
+  const [hintLoading, setHintLoading] = useState(false);
+  const [hintError, setHintError] = useState('');
+  const [hintContent, setHintContent] = useState('');
+  const [hintGeneratedAt, setHintGeneratedAt] = useState(null);
+  const [reviewModalOpen, setReviewModalOpen] = useState(false);
+  const [reviewLoading, setReviewLoading] = useState(false);
+  const [reviewError, setReviewError] = useState('');
+  const [reviewData, setReviewData] = useState(null);
+  const [reviewGeneratedAt, setReviewGeneratedAt] = useState(null);
   const editorRef = useRef(null);
   const { problemId } = useParams();
   const { handleSubmit } = useForm();
@@ -127,6 +140,66 @@ const ProblemPage = () => {
     }
   };
 
+  const openHintModal = () => {
+    setHintModalOpen(true);
+    setHintError('');
+  };
+
+  const openReviewModal = async () => {
+    if (!problem) return;
+
+    setReviewModalOpen(true);
+    setReviewLoading(true);
+    setReviewError('');
+
+    try {
+      const currentCode = editorRef.current?.getValue ? editorRef.current.getValue() : code;
+      const judgeContext = submitResult || runResult || null;
+
+      const response = await axiosClient.post('/api/ai/review', {
+        title: problem.title,
+        description: problem.description,
+        code: currentCode,
+        language: selectedLanguage,
+        judge0Result: judgeContext,
+      });
+
+      setReviewData(response.data);
+      setReviewGeneratedAt(Date.now());
+    } catch (error) {
+      console.error('Error generating review:', error);
+      setReviewData(null);
+      setReviewError(error.response?.data?.message || error.response?.data?.error || error.message || 'Failed to review code');
+    } finally {
+      setReviewLoading(false);
+    }
+  };
+
+  const fetchHint = async (level) => {
+    if (!problem) return;
+
+    setHintLevel(level);
+    setHintLoading(true);
+    setHintError('');
+
+    try {
+      const response = await axiosClient.post('/api/ai/hint', {
+        title: problem.title,
+        description: problem.description,
+        level,
+      });
+
+      setHintContent(response.data?.hint || 'No hint generated.');
+      setHintGeneratedAt(Date.now());
+    } catch (error) {
+      console.error('Error generating hint:', error);
+      setHintError(error.response?.data?.message || error.response?.data?.error || error.message || 'Failed to generate hint');
+      setHintContent('');
+    } finally {
+      setHintLoading(false);
+    }
+  };
+
   if (loading && !problem) {
     return (
       <div className="app-shell flex min-h-screen items-center justify-center">
@@ -204,6 +277,16 @@ const ProblemPage = () => {
                 </div>
 
                 <div className="flex items-center justify-end gap-2 border-t border-slate-700/50 bg-slate-900/80 p-3">
+                  <div className="mr-auto flex items-center gap-2">
+                    <button type="button" className="inline-flex items-center gap-2 rounded-lg border border-amber-400/25 bg-amber-400/10 px-4 py-2 text-sm font-black text-amber-200 transition hover:border-amber-300/40 hover:bg-amber-400/15" onClick={openHintModal} disabled={loading || !problem}>
+                      <Lightbulb className="h-4 w-4" />
+                      Get Hint
+                    </button>
+                    <button type="button" className="inline-flex items-center gap-2 rounded-lg border border-cyan-400/25 bg-cyan-400/10 px-4 py-2 text-sm font-black text-cyan-200 transition hover:border-cyan-300/40 hover:bg-cyan-400/15" onClick={openReviewModal} disabled={loading || !problem}>
+                      <Bot className="h-4 w-4" />
+                      🤖 AI Review
+                    </button>
+                  </div>
                   <button type="button" className="btn-secondary-premium inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-black" onClick={handleRun} disabled={loading}>
                     <Play className="h-4 w-4" />
                     {loading ? 'Running...' : 'Run'}
@@ -216,10 +299,28 @@ const ProblemPage = () => {
               </form>
             )}
             {activeRightTab === 'testcase' && <RunResults runResult={runResult} expandedTestCase={expandedTestCase} setExpandedTestCase={setExpandedTestCase} />}
-            {activeRightTab === 'result' && <SubmitResults submitResult={submitResult} />}
+            {activeRightTab === 'result' && <SubmitResults submitResult={submitResult} onReviewCode={openReviewModal} reviewLoading={reviewLoading} />}
           </div>
         </section>
       </div>
+      <HintModal
+        open={hintModalOpen}
+        onClose={() => setHintModalOpen(false)}
+        onSelectLevel={fetchHint}
+        selectedLevel={hintLevel}
+        loading={hintLoading}
+        error={hintError}
+        hint={hintContent}
+        generatedAt={hintGeneratedAt}
+      />
+      <AIReviewModal
+        open={reviewModalOpen}
+        onClose={() => setReviewModalOpen(false)}
+        loading={reviewLoading}
+        error={reviewError}
+        reviewData={reviewData}
+        generatedAt={reviewGeneratedAt}
+      />
     </main>
   );
 };
@@ -239,11 +340,13 @@ const TabBar = ({ tabs, active, setActive }) => (
 
 const Description = ({ problem }) => (
   <div className="space-y-6">
-    <div>
-      <h1 className="text-3xl font-black text-white">{problem.title}</h1>
-      <div className="mt-4 flex flex-wrap gap-2">
-        <span className={`rounded-md border px-3 py-1.5 text-xs font-black ${getDifficultyColor(problem.difficulty)}`}>{capitalize(problem.difficulty)}</span>
-        <span className="rounded-md border border-cyan-400/20 bg-cyan-400/10 px-3 py-1.5 text-xs font-black text-cyan-200">{formatTag(problem.tags)}</span>
+    <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+      <div>
+        <h1 className="text-3xl font-black text-white">{problem.title}</h1>
+        <div className="mt-4 flex flex-wrap gap-2">
+          <span className={`rounded-md border px-3 py-1.5 text-xs font-black ${getDifficultyColor(problem.difficulty)}`}>{capitalize(problem.difficulty)}</span>
+          <span className="rounded-md border border-cyan-400/20 bg-cyan-400/10 px-3 py-1.5 text-xs font-black text-cyan-200">{formatTag(problem.tags)}</span>
+        </div>
       </div>
     </div>
     <section className="premium-card p-5">
@@ -325,7 +428,7 @@ const RunResults = ({ runResult, expandedTestCase, setExpandedTestCase }) => (
   </div>
 );
 
-const SubmitResults = ({ submitResult }) => (
+const SubmitResults = ({ submitResult, onReviewCode, reviewLoading }) => (
   <div className="h-full overflow-y-auto p-6">
     <h3 className="mb-4 text-xl font-black text-white">Submission Result</h3>
     {!submitResult ? <EmptyState title="No submission yet" description="Submit your solution to evaluate all test cases." /> : (
@@ -338,6 +441,17 @@ const SubmitResults = ({ submitResult }) => (
         </div>
         <div className={`rounded-lg border p-4 text-sm ${submitResult.accepted ? 'border-emerald-400/25 bg-emerald-400/10 text-emerald-200' : 'border-amber-400/25 bg-amber-400/10 text-amber-200'}`}>
           {submitResult.accepted ? 'Congratulations. Your solution passed all tests.' : 'Review the failing case and check edge cases before trying again.'}
+        </div>
+        <div className="flex justify-end pt-2">
+          <button
+            type="button"
+            onClick={onReviewCode}
+            disabled={reviewLoading}
+            className="inline-flex items-center gap-2 rounded-lg border border-cyan-400/25 bg-cyan-400/10 px-4 py-2 text-sm font-black text-cyan-200 transition hover:border-cyan-300/40 hover:bg-cyan-400/15 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            <Bot className="h-4 w-4" />
+            {reviewLoading ? 'Reviewing...' : '🤖 AI Review'}
+          </button>
         </div>
       </div>
     )}

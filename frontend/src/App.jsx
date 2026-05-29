@@ -16,6 +16,7 @@ import LandingPage from "./pages/LandingPage"
 import About from "./pages/About"
 import Contact from "./pages/Contact"
 import Profile from "./pages/Profile"
+import AIKnowledgeBase from "./pages/AIKnowledgeBase"
 
 function App(){
 
@@ -47,6 +48,7 @@ function App(){
         <Route path="/admin/upload/:problemId" element={isAuthenticated && user?.role === 'admin' ? <AdminUpload /> : <Navigate to="/" />} />
         <Route path="/admin/update" element={isAuthenticated && user?.role === 'admin' ? <AdminUpdate /> : <Navigate to="/" />} />
       <Route path="/problem/:problemId" element={<ProblemPage/>}></Route>
+      <Route path="/ai-knowledge-base" element={isAuthenticated ? <AIKnowledgeBase /> : <Navigate to="/login" />}></Route>
        <Route path="/admin" element={isAuthenticated && user?.role === 'admin' ? <Admin /> : <Navigate to="/" />} />
       <Route path="/admin/create" element={isAuthenticated && user?.role === 'admin' ? <AdminPanel /> : <Navigate to="/" />} />
 

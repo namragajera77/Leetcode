@@ -3,11 +3,11 @@ import { ArrowLeft, Bot, CheckCircle, Code2, Eye, Layers, Sparkles, TrendingUp, 
 
 const features = [
   [Eye, 'Algorithm Visualization', 'Step-by-step visual understanding for sorting, searching, graphs, and patterns.'],
-  [Zap, 'LeetCode-Style Problems', 'Practice real coding challenges with fast feedback and clean problem statements.'],
+  [Zap, 'Real Coding Problems', 'Practice real coding problems with fast feedback and clear problem statements.'],
   [CheckCircle, 'Real Test Execution', 'Validate code with visible and hidden tests in an authentic workflow.'],
   [Layers, 'Focused Workspace', 'Use Monaco Editor, tabbed panels, results, submissions, and hints without visual clutter.'],
-  [TrendingUp, 'Progress Tracking', 'Watch solved counts, difficulty mix, and submission history evolve over time.'],
-  [Bot, 'AI Help', 'Ask for hints, complexity analysis, and debugging guidance when you get stuck.'],
+  [TrendingUp, 'Progress Tracking', 'Track progress, solved counts, and submission history to measure improvement.'],
+  [Bot, 'AI Help', 'Ask questions about coding problems, algorithms, data structures, and interview concepts.'],
 ];
 
 const About = () => (
@@ -17,11 +17,11 @@ const About = () => (
       <div className="max-w-4xl">
         <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-cyan-400/20 bg-cyan-400/10 px-3 py-1.5 text-sm font-bold text-cyan-200">
           <Sparkles className="h-4 w-4" />
-          About NG AlgoVista
+          About AI-Based Coding Interview Preparation Platform
         </div>
-        <h1 className="text-5xl font-black leading-tight text-white lg:text-7xl">A learning platform for people who want the logic to click.</h1>
+        <h1 className="text-5xl font-black leading-tight text-white lg:text-7xl">Master coding interviews with AI-driven feedback.</h1>
         <p className="mt-6 max-w-3xl text-lg leading-8 text-slate-300">
-          NG AlgoVista helps developers understand algorithms through visual learning, focused coding practice, and AI-guided support.
+          AI-Based Coding Interview Preparation Platform helps developers prepare for technical interviews through AI-powered hints, code reviews, real test execution, and progress tracking.
         </p>
       </div>
 
@@ -62,7 +62,7 @@ const Header = () => (
         <span className="flex h-10 w-10 items-center justify-center rounded-lg accent-gradient text-slate-950">
           <Code2 className="h-6 w-6" />
         </span>
-        <span className="text-lg font-black text-white">NG AlgoVista</span>
+        <span className="text-lg font-black text-white">AI-Based Coding Interview Preparation Platform</span>
       </Link>
       <Link to="/" className="btn-secondary-premium inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-bold">
         <ArrowLeft className="h-4 w-4" />

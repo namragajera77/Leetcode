@@ -47,9 +47,8 @@ function Login() {
             </div>
           </div>
 
-          <h1 className="text-center text-4xl font-black text-white lg:text-5xl">NG AlgoVista</h1>
-          <p className="mt-2 text-center text-sm font-semibold text-slate-400">Visualize. Solve. Master algorithms.</p>
-          <h2 className="mb-8 mt-6 text-center text-2xl font-black text-white">Sign in to your workspace</h2>
+          <h1 className="text-center text-2xl font-black text-white lg:text-3xl">Sign In</h1>
+          <p className="mt-2 text-center text-sm text-slate-400">AI-Based Coding Interview Preparation Platform</p>
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
             {displayError && (
@@ -79,7 +78,7 @@ function Login() {
               {loading ? (
                 <>
                   <span className="loading loading-spinner loading-sm"></span>
-                  Signing in...
+                    Signing in...
                 </>
               ) : (
                 <>

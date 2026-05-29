@@ -23,7 +23,7 @@ function ChatAi({ problem, problemId }) {
   const defaultMessages = [
     {
       role: 'model',
-      parts: [{ text: "Hello. I'm your AI coding assistant. Ask me for hints, edge cases, debugging help, or complexity analysis." }],
+      parts: [{ text: "Hello. I'm your AI coding assistant. Ask questions about coding problems, algorithms, data structures, and interview concepts." }],
     },
   ];
 
@@ -106,7 +106,7 @@ function ChatAi({ problem, problemId }) {
           </div>
           <div>
             <h3 className="font-black text-white">AI Coding Assistant</h3>
-            <p className="text-xs font-semibold text-slate-500">{messages.length > 1 ? `${messages.length - 1} messages` : 'Ready for hints'}</p>
+            <p className="text-xs font-semibold text-slate-500">{messages.length > 1 ? `${messages.length - 1} messages` : 'Ask questions about coding problems, algorithms, data structures, and interview concepts.'}</p>
           </div>
         </div>
         <button onClick={clearChat} className="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-black text-slate-400 ring-1 ring-slate-700 transition hover:bg-slate-800 hover:text-white" title="Clear chat">
@@ -151,7 +151,7 @@ function ChatAi({ problem, problemId }) {
           <div className="flex-1">
             <textarea
               ref={inputRef}
-              placeholder="Ask for a hint, edge case, or complexity check..."
+              placeholder="Ask questions about coding problems, algorithms, data structures, and interview concepts..."
               className="field-premium min-h-11 max-h-32 w-full resize-none px-4 py-3 text-sm"
               rows="1"
               {...register('message', {
