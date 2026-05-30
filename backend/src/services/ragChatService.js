@@ -7,18 +7,35 @@ const OLLAMA_CHAT_MODEL = process.env.OLLAMA_CHAT_MODEL || process.env.OLLAMA_MO
 
 const COLLECTION = 'interview_notes';
 
+const getOllamaBaseUrl = () => OLLAMA_API_URL
+  .replace(/\/api\/chat\/?$/i, '')
+  .replace(/\/api\/embeddings\/?$/i, '')
+  .replace(/\/api\/?$/i, '')
+  .replace(/\/chat\/?$/i, '')
+  .replace(/\/embeddings\/?$/i, '')
+  .replace(/\/$/, '');
+
 async function answerQuestion(question, docs = []) {
   // 1. embed question
   const qEmb = await embeddingService.embedText(question);
 
   // 2. query vector store
-  const results = await vectorStore.queryCollection(COLLECTION, qEmb, 5);
+  let results;
+  try {
+    results = await vectorStore.queryCollection(COLLECTION, qEmb, 5);
+  } catch (error) {
+    console.error('RAG query fallback response:', error?.message || error);
+    return {
+      answer: 'I could not find this information in the uploaded notes.',
+      sources: []
+    };
+  }
 
   // parse results shape
   const retrieved = [];
   if (results && results.documents && results.metadatas) {
-    const docsArr = results.documents;
-    const metadatasArr = results.metadatas;
+    const docsArr = Array.isArray(results.documents?.[0]) ? results.documents[0] : results.documents;
+    const metadatasArr = Array.isArray(results.metadatas?.[0]) ? results.metadatas[0] : results.metadatas;
     for (let i = 0; i < docsArr.length; i++) {
       retrieved.push({ text: docsArr[i], metadata: metadatasArr[i] });
     }
@@ -35,6 +52,13 @@ async function answerQuestion(question, docs = []) {
 
   // Build context from top retrieved chunks
   const top = retrieved.slice(0, 5);
+  if (!top.length) {
+    return {
+      answer: 'I could not find this information in the uploaded notes.',
+      sources: []
+    };
+  }
+
   const contextTexts = top.map((t, idx) => `Source ${idx + 1} (file: ${t.metadata?.filename || 'unknown'} chunk: ${t.metadata?.chunkIndex ?? '-' } ):\n${t.text}`).join('\n\n');
 
   // System prompt
@@ -48,7 +72,8 @@ async function answerQuestion(question, docs = []) {
       { role: 'system', content: systemPrompt },
       { role: 'user', content: userPrompt }
     ];
-    const resp = await axios.post(`${OLLAMA_API_URL}/chat`, { model: OLLAMA_CHAT_MODEL, messages }, { timeout: 120000 });
+    const baseUrl = getOllamaBaseUrl();
+    const resp = await axios.post(`${baseUrl}/api/chat`, { model: OLLAMA_CHAT_MODEL, messages, stream: false }, { timeout: 120000 });
     const reply = resp.data?.choices?.[0]?.message?.content || resp.data?.message?.content || resp.data?.answer || (resp.data && typeof resp.data === 'string' ? resp.data : null);
 
     const answerText = (typeof reply === 'string') ? reply : JSON.stringify(reply);
@@ -58,7 +83,7 @@ async function answerQuestion(question, docs = []) {
     return { answer: answerText, sources };
   } catch (err) {
     console.error('ragChatService error', err?.response?.data || err.message || err);
-    throw new Error('Failed to generate answer from Ollama');
+    throw new Error(err?.response?.data?.error || 'Failed to generate answer from Ollama');
   }
 }
 

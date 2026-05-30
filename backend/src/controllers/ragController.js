@@ -1,4 +1,3 @@
-const path = require('path');
 const pdfService = require('../services/pdfService');
 const ragChatService = require('../services/ragChatService');
 
@@ -10,7 +9,6 @@ exports.uploadPdf = async (req, res) => {
 
     const { chunks } = await pdfService.extractPdf(filePath, filename);
 
-    // index in the background so upload doesn't fail if Chroma/Ollama is temporarily unavailable
     setImmediate(() => {
       pdfService.indexPdf(filename, chunks).catch((error) => {
         console.error('RAG indexing failed for upload:', filename, error);

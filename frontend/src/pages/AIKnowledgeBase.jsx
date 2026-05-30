@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import axios from 'axios';
 import axiosClient from '../utils/axiosClient';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -111,7 +112,9 @@ export default function AIKnowledgeBase() {
     const fd = new FormData();
     fd.append('file', file);
     try {
-      const { data } = await axiosClient.post('/api/rag/upload', fd);
+      const { data } = await axios.post('http://localhost:3000/api/rag/upload', fd, {
+        withCredentials: true,
+      });
       // backend expected to return { id, name }
       setDocs((s) => [...s, { id: data.id || Date.now(), name: data.name || file.name }]);
     } catch (err) {
@@ -145,8 +148,9 @@ export default function AIKnowledgeBase() {
       // save to recent chats
       setRecentChats((c) => [{ id: selectedChat?.id || Date.now(), title: userMsg.content.text.slice(0, 60) || 'New chat' }, ...c].slice(0, 10));
     } catch (err) {
-      console.error('Chat error', err);
-      const aiMsg = { id: Date.now() + 1, role: 'assistant', content: { type: 'text', text: 'Error: failed to get answer.' }, meta: {} };
+      console.error('Chat error', err?.response?.data || err);
+      const serverMessage = err?.response?.data?.message || 'Error: failed to get answer.';
+      const aiMsg = { id: Date.now() + 1, role: 'assistant', content: { type: 'text', text: serverMessage }, meta: {} };
       setMessages((m) => [...m, aiMsg]);
     } finally {
       setLoading(false);
